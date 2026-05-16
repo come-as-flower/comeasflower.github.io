@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta name="robots" content="index,nofollow" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta content="website" property="og:type" />
+    <meta property="og:site_name" content="//comeasflower.github.io/" />
+    <title>타이포그래피 꽃</title>
+    <meta property="og:title" content="타이포그래피 꽃" />
+    <meta property="og:image" content="./img/thumbnail.jpg" />
+    <meta
+      property="og:description"
+      content="이화여자대학교 타이포그래피 동아리 꽃"
+    />
+    <link rel="icon" href="./assets/icon/favicon.png" />
+    <link rel="stylesheet" href="./css/home.css" />
+  </head>
+  <body class="indexBody">
+    <div class="box">
+      <div class="outterText">
+        <p>이화여자대학교</p>
+      </div>
+      <div class="innerText">
+        <a href="./news/">
+          <p>꽃 소식</p>
+          <button>
+            <img src="./assets/icon/togo.svg" alt="" />
+          </button>
+        </a>
+      </div>
+    </div>
+    <div class="box">
+      <div class="outterText">
+        <img class="logoImg" src="./assets/img/logo.png" />
+      </div>
+      <div class="innerText">
+        <a href="./flower/">
+          <p>꽃 소개</p>
+          <button>
+            <img src="./assets/icon/togo.svg" alt="" />
+          </button>
+        </a>
+      </div>
+    </div>
+    <div class="box">
+      <div class="outterText">
+        <p>타이포그래피 학회</p>
+      </div>
+      <div class="innerText">
+        <a href="./archive/">
+          <p>꽃 프로젝트 아카이빙</p>
+          <button>
+            <img src="./assets/icon/togo.svg" alt="" />
+          </button>
+        </a>
+      </div>
+    </div>
+  </body>
+  <script>
+    function toggleBox(event) {
+      // 모바일에서만 클릭 이벤트 적용
+      if (window.innerWidth <= 1200) {
+        const clickedBox = event.currentTarget;
+
+        // 이미 active인 box의 active 클래스를 제거
+        document
+          .querySelectorAll(".box")
+          .forEach((box) => box.classList.remove("active"));
+
+        // 클릭한 box에 active 클래스 추가
+        clickedBox.classList.add("active");
+      }
+    }
+
+    // 모든 box에 클릭 이벤트 추가
+    document.querySelectorAll(".box").forEach((box) => {
+      box.addEventListener("click", toggleBox);
+    });
+  </script>
+</html>
