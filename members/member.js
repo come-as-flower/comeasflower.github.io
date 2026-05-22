@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       "멤버 정보를 불러오지 못했습니다.",
     );
   }
-});
+}); 
 
 function isPlainObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
