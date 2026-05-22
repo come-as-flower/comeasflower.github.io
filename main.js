@@ -2,6 +2,13 @@
 // 뒤로가기, 스크롤 위치 복원, 모바일 메뉴 관리
 
 
+// 주소창에서 index.html 제거
+if (location.pathname.endsWith("/index.html")) {
+  const cleanPath = location.pathname.replace(/index\.html$/, "");
+  history.replaceState(null, "", cleanPath + location.search + location.hash);
+}
+
+
 // 뒤로 가기
 // 이전 페이지가 존재하면 뒤로 가고, 없으면 홈으로 이동
 function goBack() {
