@@ -26,7 +26,8 @@
     } 
 
     main    {
-        margin: 14rem 1.8rem 0rem;
+        align-items: center;
+        margin: 14rem 0rem 0rem;
     }
     
     section {
@@ -131,17 +132,27 @@
         height: calc(100vh - 36rem);
     }
 
+    .flowerNight {
+        align-items: center;
+        min-height: calc(100vh - 17.6rem);
+    }
+
     .flowerNightExplanation {
         gap: 1.8rem;
         padding-bottom: 1.8rem;
     }
 
     .worksList  {
+        width: calc(100vw - 3.6rem);
+        display: flex;
+        align-items: flex-end;
+        height: 100%;
         gap: 1.8rem;
     }
 
     .workImg    {
-        width: calc(80vw - 3.6rem);
+        max-width: calc(100vw - 3.8rem);
+        max-height: calc(100vh - 30rem);
     }
 
     .work p     {
@@ -164,12 +175,13 @@
 
     .content-left   {
         padding: 0;
-        width: calc(100vw - 3.6rem);
-        height: calc(100vh - 17.8rem);
+        width: 100vw;
+        height: calc(100vh - 14rem);
     }
 
     .allimContainer {
-        height: calc(100vh - 17.8rem);
+        height: calc(100vh - 14rem);
+        padding-bottom: 1.2rem;
     }
 
     div > .notice-exp {
@@ -177,7 +189,8 @@
     }
 
     .notice-exp {
-        padding: 1.2rem 0;
+        padding: 1.2rem 0rem;
+        margin: 0 1.8rem;
         flex-direction: column;
         gap: 0;
     }
@@ -209,12 +222,16 @@
         left: 0;
     }    
 
-    #content.content-right{
+    .notice-contents    {
+        height: calc(100vh - 14rem);
+    }
+
+    .notice-contents-inner {
         padding-top: 1.2rem;
     }
 
-    .notice-contents    {
-        height: calc(100vh - 17.8rem);
+    .notice-date-right {
+        margin-top: 2.4rem;
     }
 
     .content-right h2 {
