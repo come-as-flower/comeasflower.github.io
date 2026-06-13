@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta name="robots" content="index,nofollow">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta content="website" property="og:type">
+        <meta property="og:site_name" content="//comeasflower.github.io/">
+        <title>꽃: 소식 - 꽃밤</title>
+        <meta property="og:title" content="타이포그래피 꽃">
+        <meta property="og:image" content="./assets/img/thumbnail.jpg">
+        <meta property="og:description" content="이화여자대학교 타이포그래피 동아리 꽃">
+        <link rel="icon" href="../assets/icon/favicon.png" />
+        <link rel="stylesheet" href="../css/style.css">
+        <link rel="stylesheet" href="../css/responsive.css">
+    </head>
+    <body>
+    <header>
+      <button class="logo">
+        <a href="../">
+          <img class="logoImg" src="../assets/img/logo.png" alt="꽃">
+        </a>
+      </button>
+      <div class="menu">
+        <ul class="pageMenu">
+          <li class="back">
+            <button id="closeContent">
+              <img src="../assets/icon/back.svg" alt="back">
+            </button>
+          </li>
+          <li class="selectedPage">
+            <a href="../news/">소식</a>
+          </li>
+          <li class="unselectedPage">
+            <a href="../flower/">소개</a>
+            <a href="../archive/">모아보기</a>
+          </li>
+          <li class="hambugerMenu">
+            <img src="../assets/icon/menu.svg" alt="menu" />
+          </li>
+          <li class="close">
+            <img src="../assets/icon/close.svg" alt="close" />
+          </li>
+        </ul>
+        <div class="line"></div>
+        <ol class="listMenu">
+          <li class="radioButton">
+            <a href="../news/">꽃밤</a>
+          </li>
+          <li class="radioButton selected">
+            <a href="./">알림</a>
+          </li>
+        </ol>
+      </div>
+    </header>
+    <main class="contents">
+      <nav class="mobilePageMenu">
+        <ul>
+          <a href="../flower/">소개</a>
+        </ul>
+        <ul>
+          <a href="../news/">소식</a>
+        </ul>
+        <ul>
+          <a href="../archive/">모아보기</a>
+        </ul>
+      </nav>
+      <div class="allim">
+        <div class="content-left">
+          <div class="notice-exp">
+            <h3 class="notice-title">제목</h3>
+            <p class="notice-date">게시일</p>
+          </div>
+          <div class="allimContainer"></div>
+        </div>
+        <div class="content-right" id="content"></div>
+      </div>
+    </main>
+    <script src="../main.js"></script>
+    <script src="./allim.js"></script>
+  </body>
+</html>
