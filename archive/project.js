@@ -1,3 +1,60 @@
+document.addEventListener("DOMContentLoaded", () => {
+  const worksList = document.querySelector(".worksList");
+  if (!worksList) return;
+
+  const normalizeWheelDelta = (event) => {
+    let delta = Math.abs(event.deltaY) > Math.abs(event.deltaX)
+      ? event.deltaY
+      : event.deltaX;
+
+    // deltaMode 보정
+    // 0: pixel, 1: line, 2: page
+    if (event.deltaMode === WheelEvent.DOM_DELTA_LINE) {
+      delta *= 16;
+    } else if (event.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
+      delta *= window.innerHeight;
+    }
+
+    return delta;
+  };
+
+  worksList.addEventListener(
+    "wheel",
+    (event) => {
+      const hasHorizontalOverflow =
+        worksList.scrollWidth > worksList.clientWidth;
+
+      if (!hasHorizontalOverflow) return;
+
+      const delta = normalizeWheelDelta(event);
+      if (delta === 0) return;
+
+      const maxScrollLeft = worksList.scrollWidth - worksList.clientWidth;
+      const currentScrollLeft = worksList.scrollLeft;
+
+      const isScrollingRight = delta > 0;
+      const isScrollingLeft = delta < 0;
+
+      const canScrollRight = currentScrollLeft < maxScrollLeft;
+      const canScrollLeft = currentScrollLeft > 0;
+
+      // 가로 스크롤이 더 이상 불가능하면 세로 페이지 스크롤을 막지 않음
+      if (
+        (isScrollingRight && !canScrollRight) ||
+        (isScrollingLeft && !canScrollLeft)
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+
+      const speed = 1.6;
+      worksList.scrollLeft += delta * speed;
+    },
+    { passive: false }
+  );
+});
+
 let currentProject = null;
 let selectedWorkIndex = null;
 let selectedImageIndex = 0;
@@ -19,16 +76,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     const response = await fetch("../assets/json/project.json");
     const jsonData = await response.json();
 
-    const allProjects = Object.values(jsonData)
-      .filter(Array.isArray)
-      .flat();
+    const projectGroups = getProjectGroups(jsonData);
+    const projectResult = findProjectById(jsonData, projectId);
 
-    const project = allProjects.find((item) => item.id === projectId);
+    renderGenerationMenu(projectGroups, projectResult?.generationId || "");
 
-    if (!project) {
+    if (!projectResult) {
       renderError("프로젝트를 찾을 수 없습니다.");
       return;
     }
+
+    const project = projectResult.project;
 
     currentProject = project;
     cacheBaseProjectInfo(project);
@@ -103,6 +161,69 @@ function renderProject(project) {
     });
 
     worksList.appendChild(workDiv);
+  });
+}
+
+function getProjectGroups(projectData) {
+  return Object.entries(projectData)
+    .filter(([, projects]) => Array.isArray(projects))
+    .map(([key, projects]) => {
+      const generationId = getGenerationIdFromKey(key);
+
+      return {
+        id: generationId,
+        label: `${generationId}기`,
+        projects,
+      };
+    })
+    .sort((a, b) => Number(b.id) - Number(a.id));
+}
+
+function findProjectById(projectData, projectId) {
+  for (const [key, projects] of Object.entries(projectData)) {
+    if (!Array.isArray(projects)) continue;
+
+    const project = projects.find((item) => item.id === projectId);
+
+    if (project) {
+      const generationId = getGenerationIdFromKey(key);
+
+      return {
+        project,
+        generationId,
+      };
+    }
+  }
+
+  return null;
+}
+
+function getGenerationIdFromKey(key) {
+  const match = String(key).match(/\d+/);
+  return match ? match[0] : String(key);
+}
+
+function renderGenerationMenu(groups, selectedGenerationId) {
+  const menu = document.querySelector(".listMenu");
+  if (!menu) return;
+
+  menu.innerHTML = "";
+
+  groups.forEach((group) => {
+    const item = document.createElement("li");
+    item.className = "radioButton";
+
+    if (group.id === selectedGenerationId) {
+      item.classList.add("selected");
+    }
+
+    const link = document.createElement("a");
+    link.href = `../archive/#${group.id}`;
+    link.dataset.target = group.id;
+    link.textContent = group.label;
+
+    item.appendChild(link);
+    menu.appendChild(item);
   });
 }
 
