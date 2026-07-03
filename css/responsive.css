@@ -237,4 +237,30 @@
     .content-right h2 {
         margin-bottom: 1.8rem;
     }
+
+    .projectDetail {
+        --project-work-min-height: 24rem;
+        --project-work-max-height: 38rem;
+        --project-work-gap: 1.8rem;
+
+        min-height: calc(100dvh - 14rem - 1.8rem);
+    }
+
+    .projectDetail > .projectWorksList {
+        width: calc(100vw - 3.6rem);
+        height: clamp(
+            var(--project-work-min-height),
+            42dvh,
+            var(--project-work-max-height)
+        );
+        min-height: var(--project-work-min-height);
+        margin-top: auto;
+        padding-top: var(--project-work-gap);
+        align-items: flex-end;
+    }
+
+    .projectDetail .workImg {
+        max-width: calc(100vw - 3.8rem);
+        max-height: 100%;
+    }
 }
