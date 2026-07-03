@@ -299,3 +299,54 @@ function renderArchiveError(message) {
   error.textContent = message;
   contents.appendChild(error);
 }
+
+function buildImageUrl(value, size = "w1000") {
+  if (!value) return "";
+
+  const src = String(value).trim();
+
+  if (!src) return "";
+
+  // 1. 구글 드라이브 공유 링크인 경우
+  const driveIdFromUrl = getGoogleDriveId(src);
+  if (driveIdFromUrl) {
+    return `https://drive.google.com/thumbnail?id=${driveIdFromUrl}&sz=${size}`;
+  }
+
+  // 2. 일반 외부 URL인 경우
+  if (src.startsWith("http://") || src.startsWith("https://")) {
+    return src;
+  }
+
+  // 3. 로컬 파일 경로인 경우
+  if (isLocalImagePath(src)) {
+    return src;
+  }
+
+  // 4. 그 외에는 구글 드라이브 파일 ID로 간주
+  return `https://drive.google.com/thumbnail?id=${src}&sz=${size}`;
+}
+
+function getGoogleDriveId(value) {
+  if (!value.includes("drive.google.com")) return "";
+
+  const queryMatch = value.match(/[?&]id=([^&]+)/);
+  if (queryMatch) return queryMatch[1];
+
+  const fileMatch = value.match(/\/file\/d\/([^/]+)/);
+  if (fileMatch) return fileMatch[1];
+
+  const thumbnailMatch = value.match(/thumbnail\?id=([^&]+)/);
+  if (thumbnailMatch) return thumbnailMatch[1];
+
+  return "";
+}
+
+function isLocalImagePath(value) {
+  return (
+    value.startsWith("/") ||
+    value.startsWith("./") ||
+    value.startsWith("../") ||
+    /\.(png|jpe?g|webp|gif|svg)$/i.test(value)
+  );
+}

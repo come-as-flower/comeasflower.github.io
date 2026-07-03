@@ -236,7 +236,6 @@ section {
 }
 
 .worksList {
-  height: calc(100vh - 44rem);
   display: flex;
   gap: 2.4rem;
   overflow-x: auto;
@@ -307,11 +306,11 @@ section {
 }
 
 .focusViewer {
-  position: absolute;
   width: calc(50vw - 4.8rem);
-  border: var(--border-syle);
+  height: calc(100vh - 18.6rem);
+  position: absolute;
   overflow: hidden;
-  z-index: -1;
+  z-index: 1;
 }
 
 .focusViewerInner {
@@ -320,8 +319,9 @@ section {
 }
 
 .focusViewerImg {
-  width: 100%;
-  height: 100%;
+  max-width: calc(50vw - 4.8rem - 2px);
+  max-height: calc(100vh - 18.6rem - 2px);
+  border: var(--border-syle);
   object-fit: contain;
   display: block;
 }
@@ -390,7 +390,6 @@ section {
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  padding-bottom: 6rem;
 }
 
 .scroll-x {
@@ -565,4 +564,42 @@ section {
 
 .border {
   border: 1px solid;
+}
+
+
+.projectDetail {
+  --project-bottom-space: 1.8rem;
+  --project-work-min-height: 30rem;
+  --project-work-max-height: 42rem;
+  --project-work-gap: 3.6rem;
+
+  min-height: calc(100dvh - 16rem - var(--project-bottom-space));
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.projectDetail .projectDepth {
+  flex: 0 0 auto;
+}
+
+.projectDetail > .projectWorksList {
+  box-sizing: border-box;
+
+  min-height: var(--project-work-min-height);
+  align-items: flex-end;
+}
+
+.projectDetail .work,
+.projectDetail .workThumbButton {
+  align-items: flex-end;
+}
+
+.projectDetail .workImg {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: calc(25vw - 3.8rem);
+  max-height: 100%;
+  object-fit: contain;
 }
