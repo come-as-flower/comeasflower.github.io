@@ -7,6 +7,13 @@
   --second-color: #858585;
   --bg-color: white;
   --border-syle: var(--main-color) solid 1px;
+
+  --archive-panel-padding: 1.8rem;
+  --archive-gap: 2.4rem;
+  --archive-header-size: 2rem;
+  --archive-title-size: 4.8rem;
+  --archive-meta-width: 10vw;
+  --archive-name-width: 40vw;
 }
 
 html {
@@ -29,6 +36,10 @@ body {
 
   overflow-x: hidden;
   -ms-overflow-style: none;
+}
+
+body.archiveBody {
+  overflow: hidden;
 }
 
 body.menu-open {
@@ -223,6 +234,258 @@ section {
   border: var(--main-color);
 }
 
+.archiveLayout {
+  min-height: calc(100vh - 18.6rem);
+}
+
+.archivePage {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  height: calc(100vh - 18.6rem);
+  border: none;
+  overflow: hidden;
+}
+
+.archiveSidebar {
+  width: calc(50vw - 4.8rem);
+  padding-top: 1.8rem;
+  border-right: none;
+  overflow: hidden;
+  border-bottom: var(--border-syle);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.archiveProjectList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.archiveListHeader {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--archive-gap);
+  border-bottom: var(--border-syle);
+  background: var(--bg-color);
+  padding: var(--archive-panel-padding);
+  font-size: var(--archive-header-size);
+  font-weight: 400;
+}
+
+.archiveListHeader span:last-child {
+  width: 10vw;
+  margin-left: 0;
+  text-align: left;
+  color: var(--second-color);
+}
+
+.archiveProjectItem {
+  width: 100%;
+}
+
+.archiveProjectButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--archive-gap);
+  border: none;
+  border-bottom: var(--border-syle);
+  background: transparent;
+  padding: var(--archive-panel-padding);
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+.archiveProjectButton.is-selected {
+  background: var(--main-color);
+  color: var(--bg-color);
+}
+
+.archiveProjectName {
+  display: inline-block;
+  width: calc(100% - 10vw - 2.4rem);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--archive-header-size);
+  font-weight: 400;
+}
+
+.archiveProjectMeta {
+  width: 10vw;
+  color: var(--second-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  flex-shrink: 0;
+}
+
+.archivePreviewPanel {
+  width: calc(50vw - 2.4rem);
+  overflow: hidden;
+  border-bottom: none;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.projectPreview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--archive-gap);
+  min-height: 100%;
+  border-bottom: var(--border-syle);
+  box-sizing: border-box;
+}
+
+.projectPreviewHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-bottom: var(--border-syle);
+  padding: 0 0 1.8rem;
+  margin: 0;
+}
+
+.projectPreviewHeader h2 {
+  margin: 0;
+  width: 100%;
+  font-size: 4.8rem;
+  font-weight: 700;
+  line-height: 150%;
+  letter-spacing: -0.02em;
+}
+
+.projectPreviewBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--archive-gap);
+  margin-top: 0;
+}
+
+.projectPreviewBody p {
+  width: 100%;
+  margin: 0;
+  line-height: 180%;
+  font-size: 2rem;
+}
+
+.projectPreviewMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding-top: 0;
+}
+
+.projectPreviewMeta p {
+  margin: 0;
+  width: 100%;
+  color: var(--second-color);
+  line-height: 180%;
+  font-size: 2rem;
+}
+
+.projectPreviewGallery {
+  width: 100%;
+  overflow: hidden;
+  margin-top: auto;
+  margin-bottom: 2.4rem;
+  border-top: none;
+  padding-top: 0;
+}
+
+.projectPreviewTrack {
+  display: flex;
+  align-items: flex-end;
+  gap: 2.4rem;
+  width: max-content;
+  overflow: hidden;
+  scroll-behavior: smooth;
+}
+
+.projectPreviewSlide {
+  flex: 0 0 calc(25vw - 2.4rem);
+  width: calc(25vw - 2.4rem);
+  max-width: calc(25vw - 2.4rem);
+  padding-right: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-end;
+}
+
+.projectPreviewSlide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: 44rem;
+  object-fit: cover;
+  object-position: center;
+  border: var(--border-syle);
+  background: #f5f5f5;
+  box-sizing: border-box;
+}
+
+.projectPreviewWorks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 18rem;
+  overflow: hidden;
+}
+
+.projectPreviewWork {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.2rem;
+  border-bottom: var(--border-syle);
+  padding-bottom: 0.8rem;
+  opacity: 0.55;
+  transition: opacity 0.35s ease;
+}
+
+.projectPreviewWork.is-active {
+  opacity: 1;
+}
+
+.projectPreviewWork span {
+  font-weight: 600;
+}
+
+.projectPreviewWork small {
+  color: var(--second-color);
+  flex: 1;
+  text-align: right;
+  line-height: 1.5;
+}
+
+.archiveErrorText {
+  margin: 0;
+  padding: 2.4rem;
+}
+
 .articleText {
   margin: 0px;
   display: flex;
@@ -244,12 +507,20 @@ section {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scroll-padding: 1rem;
+  height: 100%;
+  width: 100%;
+  align-items: flex-end;
+}
+
+.projectWorksList {
+  padding: 1.8rem 0 0;
+  box-sizing: border-box;
 }
 
 .workImg {
   max-width: calc(25vw - 3.8rem);
   max-height: calc(100vh - 44.2rem);
-  transform-origin: left bottom; /* 기본 상태에서도 좌측 하단을 기준 */
+  transform-origin: left bottom;
   transition:
     width 0.3s ease-in-out,
     transform-origin 0s;

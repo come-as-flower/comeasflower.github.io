@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/responsive.css" />
   </head>
-  <body>
+  <body class="archiveBody">
     <header>
       <button class="logo">
         <a href="../">
@@ -48,7 +48,7 @@
         <ol class="listMenu"></ol>
       </div>
     </header>
-    <main class="contents">
+    <main class="contents archiveLayout">
       <nav class="mobilePageMenu">
         <ul>
           <a href="../flower/">소개</a>
@@ -60,6 +60,16 @@
           <a href="./">모아보기</a>
         </ul>
       </nav>
+
+      <div class="archivePage">
+        <aside class="archiveSidebar">
+          <ul class="archiveProjectList" aria-label="프로젝트 목록"></ul>
+        </aside>
+
+        <section class="archivePreviewPanel" aria-live="polite">
+          <div class="projectPreview"></div>
+        </section>
+      </div>
     </main>
     <script src="../main.js"></script>
     <script src="./archive.js"></script>

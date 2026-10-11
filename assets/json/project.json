@@ -26,9 +26,21 @@
             "works": [
                 {
                     "creator": "",
-                    "title": "",
+                    "title": "고양이의 보은",
                     "description": "",
-                    "image": "1GCBDLip183sCd3-yunJOEPdRT8XJrGi_"
+                    "image": "1mYJkiRoDOIdsCGdhBOP6632ge-Fw1Rb8"
+                },
+                {
+                    "creator": "",
+                    "title": "리틀포레스트",
+                    "description": "",
+                    "image": "1S15ZZiRo193rCl-NjoKECtgPd6fTfxXY"
+                },
+                {
+                    "creator": "",
+                    "title": "애프터양",
+                    "description": "",
+                    "image": "1dfM3-r-pznhWcCGHL35jMD-xFWTNIVog"
                 }
             ]
         },
@@ -41,10 +53,13 @@
             "image": "../assets/img/project/11-3.jpg",
             "works": [
                 {
-                    "creator": "",
-                    "title": "",
+                    "creator": "김한슬",
+                    "title": "반체",
                     "description": "",
-                    "image": "1GCBDLip183sCd3-yunJOEPdRT8XJrGi_"
+                    "images": [
+                        "1S3JulPTDOs28ua6lun-TlSSPDP8xt8-s",
+                        "1s-rUFrpRlhQBukJTp7vN45C0L0PunO95"
+                    ]
                 }
             ]
         },
@@ -53,7 +68,7 @@
             "name": "일공구잎, 아름다운 한글을 널리 알리다",
             "description": "꽃이 피고 지는 수순 속에서, 잎의 존재는 중요하지 않을 수 없습니다. 타이포그래피 또한 디자인에 있어 가장 기틀이 되는 요소이기도 합니다. 잎은 소모임 ‘꽃’의 브랜드로, 식물의 기본적인 생명 활동 기관인 ‘잎’에 빗대어 가장 기틀이 되는 타이포그래피를 주축으로 이야기를 전개해 나갑니다. 잎의 첫 이야기, ‘일공구잎’은 한글날을 기념하여 한글을 분석하고 연구함으로써 보다 실험적이고 다채로운 작업물을 선보입니다. 그로써 한글의 가능성을 두드러지게 나타내는 것은 물론, 한글의 조형성과 아름다움을 알리는 데 목표합니다.",
             "duration": "2024.04.02. - 2024.04.30.",
-            "output": "브랜딩",
+            "output": "워크샵",
             "image": "../assets/img/project/11-4.jpg",
             "works": [
                 {
@@ -65,11 +80,11 @@
             ]
         },
         {
-            "id": "11-4",
+            "id": "11-5",
             "name": "책갈피",
             "description": "꽃이 피고 지는 수순 속에서, 잎의 존재는 중요하지 않을 수 없습니다. 타이포그래피 또한 디자인에 있어 가장 기틀이 되는 요소이기도 합니다. 잎은 소모임 ‘꽃’의 브랜드로, 식물의 기본적인 생명 활동 기관인 ‘잎’에 빗대어 가장 기틀이 되는 타이포그래피를 주축으로 이야기를 전개해 나갑니다. 잎의 첫 이야기, ‘일공구잎’은 한글날을 기념하여 한글을 분석하고 연구함으로써 보다 실험적이고 다채로운 작업물을 선보입니다. 그로써 한글의 가능성을 두드러지게 나타내는 것은 물론, 한글의 조형성과 아름다움을 알리는 데 목표합니다.",
             "duration": "2024.04.02. - 2024.04.30.",
-            "output": "브랜딩",
+            "output": "레터링",
             "image": "../assets/img/project/11-5.jpg",
             "works": [
                 {
@@ -274,7 +289,7 @@
             "name": "스터디",
             "description": "활자 제작 도구인 글립스와 꽃의 작업을 아카이브하기 위한 웹 스터디를 진행했습니다. 기존 활동을 아카이브하는 웹사이트를 구축하고, 한글이 아닌 라틴과 딩벳 활자체를 제작하며 색다른 타이포그래피 실험을 시도했습니다.",
             "duration": "2024.05.25. - 2025.03.10",
-            "output": "딩벳과 라틴 서체, 웹사이트",
+            "output": "서체, 워크샵",
             "image": "",
             "works": [
                 {
@@ -296,7 +311,7 @@
             "name": "한글 악보집",
             "description": "578번째 한글날을 기념하여 한글의 아름다움과 가치를 담아 <한글 악보집>을 제작하였습니다. 한글의 역사를 되짚어보며 글자의 구조적, 조형적 특성을 담아 총 14개의 동요로 구성한 악보집입니다. 우리에게 친근한 음악과 타이포그래피의 요소를 결합하며, 보다 많은 사람들에게 한글날의 의미가 가깝게 다가가기를 바랍니다. 어린 시절 불렀던 익숙한 멜로디를 떠올리며, 한글 가사의 흐름을 따라 감상해보세요.",
             "duration": "2024.09.03. - 2024.10.01.",
-            "output": "레터링, 악보집",
+            "output": "레터링, 책",
             "works": [
                 {
                     "creator": "사람C",
@@ -311,7 +326,7 @@
             "name": "기념일 엽서",
             "description": "13가지의 기념일을 축하하는 엽서입니다. 특별한 날, 더 가깝게 다가오는 삶의 가치들을 꽃과 함께 종이 한 장에 눌러 담아 보관합니다.",
             "duration": "2025.01.07. - 2025.02.11.",
-            "output": "레터링, 엽서",
+            "output": "레터링",
             "works": [
                 {
                     "creator": "사람C",
@@ -326,7 +341,7 @@
             "name": "사물 활자체",
             "description": "사물에서 모티브를 얻어, 그 특성을 담아낸 레터링과 서체를 제작했습니다. 같은 대상에서 도출된 두 결과물을 비교하며 사물을 바라보는 새로운 시각을 만나보세요.",
             "duration": "2024.07.16. - 2025.03.04.",
-            "output": "레터링, 활자체, 보기집",
+            "output": "레터링, 서체, 책",
             "works": [
                 {
                     "creator": "강수아",
@@ -724,91 +739,121 @@
                     "creator": "강수아",
                     "title": "우희",
                     "description": "‘우희는 민부리 계열의 본문용 서체로 잔잔한 획 대비를 통해 영화 《패왕별희》의 긴장과 서정을 담는다. 전통 속에서 운명을 담담히 노래하는 인물의 감정을 시대성과 함께 서사적으로 드러낸다.",
-                    "image": "1uiQIRHtd9HhXlHSLj9zK6xje5J3PvncU"
+                    "images": [
+                        "1uiQIRHtd9HhXlHSLj9zK6xje5J3PvncU"
+                    ]
                 },
                 {
                     "creator": "김소현",
                     "title": "철심체",
                     "description": "영화 브루탈리스트를 소재로 그린 글자들이다. 브루탈리스트는 브루탈리즘 건축을 소재로한 영화이다. 폭이 좁고 단단한 구조가 두드러지는 글자들을 그렸다.",
-                    "image": "1PQp7XV50z7ojX7gpWCfbG_zwtwDx-i-8"
+                    "images": [
+                        "1PQp7XV50z7ojX7gpWCfbG_zwtwDx-i-8"
+                    ]
                 },
                 {
                     "creator": "김시윤",
                     "title": "잉걸물체",
                     "description": "픽사의 애니메이션 〈엘리멘탈〉에 등장하는 여러 원소의 형태적 특징에서 착안한 레터링과 글꼴을 소개하는 글꼴보기집이다. 크게 4개의 파트로 이루어져 있으며, 각 파트의 케이스는 4원소의 화합을 나타내는 퍼즐로 기능하기도 한다.",
-                    "image": "17S46KySQhcCwPJqUHHLPPP1y1Ngps-cn"
+                    "images": [
+                        "17S46KySQhcCwPJqUHHLPPP1y1Ngps-cn"
+                    ]
                 },
                 {
                     "creator": "김예진12",
                     "title": "베이브체",
                     "description": "영화 <베이비 드라이버>를 모티브로 제작한 서체 ‘베이브’를 소개하는 책이다. 질주 장면이 주는 속도감과 강렬한 인상을 페이지 디자인과 제본에 담았으며, 주인공의 주요 소지품 카세트 테이프를 책의 구조와 형식에 반영했다.",
-                    "image": "1FFoHa9PLUwjMSOdGRupD0sV69EhJb2aB"
+                    "images": [
+                        "1FFoHa9PLUwjMSOdGRupD0sV69EhJb2aB"
+                    ]
                 },
                 {
                     "creator": "김예진13",
                     "title": "달림체",
                     "description": "영화 〈시간을 달리는 소녀〉를 모티브로, ‘누군가 달려가고 있다’는 잔상을 남기는 레터링과 그 인상을 확장한 서체 〈달림체〉를 디자인했다. 가로로 긴 페이지를 곱씹듯 읽으며, 눈으로 달려보길 바란다.",
-                    "image": "1Mp8XsZn43BYgKA-PxsiTriL_kMozcALa"
+                    "images": [
+                        "1Mp8XsZn43BYgKA-PxsiTriL_kMozcALa"
+                    ]
                 },
                 {
                     "creator": "김하빈",
                     "title": "연인체",
                     "description": "사‘연인’ 서체는 디자이너 본인의 손글씨에서 출발한 서체로, 손글씨가 가진 자연스러운 획의 흐름 및 감정의 떨림과 여백의 호흡을 최대한 보존하면서도 드라마 <연인>이 지닌 사극적 분위기와 시대적 감성을 반영하도록 재구성한 서체이다.",
-                    "image": "1-A8YqeNdABwNumd3BB3M8YcrhS45b4m7"
+                    "images": [
+                        "1-A8YqeNdABwNumd3BB3M8YcrhS45b4m7"
+                    ]
                 },
                 {
                     "creator": "두민영",
                     "title": "거미체",
                     "description": "Spider-Man 3에서 출발해 거미를 모티프로 제작했다. 가느다란 곡선을 중심으로, 글자의 전반적인 형태에 거미의 머리와 몸통 형상을 담고 받침을 길게 늘여 강조했다. 또한 영화 속 베놈의 점액질 같은 질감을 반영해, 각 글자가 서로 유기적으로 연결되도록 표현했다.",
-                    "image": "1PTCrGYOIWm3gJfpOWUWAsVKNiMMVYVXU"
+                    "images": [
+                        "1PTCrGYOIWm3gJfpOWUWAsVKNiMMVYVXU"
+                    ]
                 },
                 {
                     "creator": "박선율",
                     "title": "쿨쿨쿨...체",
                     "description": "아이 글꼴보기집은 드라마 Brooklyn Nine-Nine의 유머러스한 분위기를 서체로 풀어낸 결과물이다. 기울기 있는 탈네모꼴 구조를 통해 장난기와 리듬감을 담아내고, 사건 파일처럼 구성해 형사 드라마 특유의 재치와 속도감을 시각화했다.",
-                    "image": "1wC4uu8ZLCCwU3gLpAoyoEteXIwFSvOv_"
+                    "images": [
+                        "1wC4uu8ZLCCwU3gLpAoyoEteXIwFSvOv_"
+                    ]
                 },
                 {
                     "creator": "윤태희",
                     "title": "안부 글씨",
                     "description": "영화 <러브레터>의 정서에서 출발한 안부 글씨는 일본어 손글씨의 리듬과 여백을 한글로 재해석한 글꼴이다. 자유로운 흐름 속에는 섬세한 기울기와 반복이 만든 견고한 규칙성이 숨어 있다. 안부 글씨가 전하는 정제된 자유로움을 만나보길 바란다.",
-                    "image": "1tUmGAvzJY2os7ue8Kjr8PjFyPKh06wdC"
+                    "images": [
+                        "1tUmGAvzJY2os7ue8Kjr8PjFyPKh06wdC"
+                    ]
                 },
                 {
                     "creator": "이민서",
                     "title": "위플래쉬",
                     "description": "영화가 보여주는 완벽 강박의 구조를 글자로 번역한 작업이다. 자유가 아닌 통제로 기능하는 음악처럼, 정형화된 고딕 구조와 날카로운 꺾임을 통해 정확성만을 요구받는 긴장과 압박의 리듬을 획의 두께와 간격으로 시각화했다.",
-                    "image": "1S3C3-IkPa9vD4pi5pY7-TsJJWNQqD4l8"
+                    "images": [
+                        "1S3C3-IkPa9vD4pi5pY7-TsJJWNQqD4l8"
+                    ]
                 },
                 {
                     "creator": "임정연",
                     "title": "원령체",
                     "description": "'원령체 글꼴보기집’은 영화 원령공주를 보고 그린 글꼴과 레터링을 소개하는 책이다. 원령공주 레터링은 여자 주인공 ‘산’의 목걸이 장식을 바탕으로, 자연적 흐름이 느껴지도록 그렸다. 원령체는 새싹이나 나뭇가지가 뻗어나가는 모습을 떠올리며 제작한 민부리 계열 서체이다.",
-                    "image": "1FMt_xGX_7bMPpnIpXqxJmSqs-Fstaonk"
+                    "images": [
+                        "1FMt_xGX_7bMPpnIpXqxJmSqs-Fstaonk"
+                    ]
                 },
                 {
                     "creator": "최서원",
                     "title": "노조미체",
                     "description": "애니메이션 <소니 보이>의 주인공 노조미의 이름을 따온 서체이다. 프레임에는 애니메이션 속의 대사들을 임의로 나열하고, 내지는 글꼴보기집으로 구성했다. 병렬적으로 놓인 세계관을 판형에 반영하고자 했다.",
-                    "image": "1RdqtkPofIvvumFAkzrFXmu_wq5ihH7dV"
+                    "images": [
+                        "1RdqtkPofIvvumFAkzrFXmu_wq5ihH7dV"
+                    ]
                 },
                 {
                     "creator": "최정안",
                     "title": "건반체",
                     "description": "영화 〈소울〉에서 영감을 받은, 길쭉한 피아노 건반을 닮은 서체이다.",
-                    "image": "1osryUtZCAwbOQfQF9aY5jqihCiGUN3YO"
+                    "images": [
+                        "1osryUtZCAwbOQfQF9aY5jqihCiGUN3YO"
+                    ]
                 },
                 {
                     "creator": "한미리",
                     "title": "홀리체",
                     "description": "'홀리체'는 자유롭고 화려한 삶을 동경하는 「티파니에서 아침을」의 여주인공 홀리 골라이틀리에게서 영감을 받아 탄생한 제목용 글꼴이다. 긴 파이프 담배를 물고 서있는 오드리 헵번의 모습을 모티브로 장체 형태의 장식적인 글자들을 그려냈다.",
-                    "image": "1IsxErQVO6qv7ccf_QGv_Tm-NflLiBDQc"
+                    "images": [
+                        "1IsxErQVO6qv7ccf_QGv_Tm-NflLiBDQc"
+                    ]
                 },
                 {
                     "creator": "한유민",
                     "title": "영군체",
                     "description": "영화 〈싸이보그지만 괜찮아〉의 주인공인 영군을 모티브로 제작한 서체. 영군은 스스로를 싸이보그라 칭하지만, 사실 누구보다 따뜻하고, 사랑스럽고, 인간적이다. 휴머니스트 산스를 기반으로 하되, 곡선 획을 직선으로 처리하여 싸이보그 속 인간적인 영군의 모습을 표현했다.",
-                    "image": "11f-cjxk1A6622f8BKP0IPCGcUgKoev5G"
+                    "images": [
+                        "11f-cjxk1A6622f8BKP0IPCGcUgKoev5G"
+                    ]
                 }
             ]
         },
@@ -823,91 +868,123 @@
                     "creator": "강수아",
                     "title": "무시무종; 12연기력",
                     "description": "12연기의 구조를 시간 위에 배치한 연중 달력이다. 12연기는 인간이 왜 고통을 겪고 윤회하는지를 12단계의 인과관계로 설명하는 불교의 가르침이다. 시작과 끝이 없는 세계관인 무시무종을 바탕으로 달력이라는 시간 단위에 대응시켜 삶과 윤회의 흐름을 시각화한다.",
-                    "image": "18mvwizU8DywOUgeddGPM2qzQJ23FPq_I"
+                    "images": [
+                        "18mvwizU8DywOUgeddGPM2qzQJ23FPq_I",
+                        " ",
+                        " "
+                    ]
                 },
                 {
                     "creator": "김소현",
                     "title": "2026 한붓 그리기",
                     "description": "꽃에서의 첫 활동으로 그렸던 ‘꽃’ 레터링에서 출발한 한글 연력이다. 한 획으로 이어 그린 유연한 글자들이 모인 달력이다.",
-                    "image": "1YXF5rZJm6etE_Dq-UlyAe8E6nkiJ2Iro"
+                    "images": [
+                        "1YXF5rZJm6etE_Dq-UlyAe8E6nkiJ2Iro"
+                    ]
                 },
                 {
                     "creator": "김시윤",
                     "title": "2026 Now Playing",
                     "description": "음원 사이트가 매년 제공하는 음악 연말결산 서비스에서 아이디어를 얻어 월별 K-pop 달력을 구성하였다. 월별로 가장 많이 들었던 K-pop 곡 속의 가장 좋아하는 한글 가사를 레터링으로 표현하여 이 노래들을 듣던 기억과 한글 가사의 아름다움을 달력에 담고자 하였다.",
-                    "image": "1pSd1DQEHjeQ3KduW6s7KmVOCid2wVMY9"
+                    "images": [
+                        "1pSd1DQEHjeQ3KduW6s7KmVOCid2wVMY9"
+                    ]
                 },
                 {
                     "creator": "김예진12",
                     "title": "레드데이즈",
                     "description": "바쁜 현대인들을 위한 2026년의 쉬는 날만 모은 달력이다.",
-                    "image": "1C5FpM4w8qTfKTCAMUa0o7FXz58su_6XW"
+                    "images": [
+                        "1C5FpM4w8qTfKTCAMUa0o7FXz58su_6XW"
+                    ]
                 },
                 {
                     "creator": "김예진13",
                     "title": "산타의 디데이",
                     "description": "산타는 12월에만 존재할까? 보이지 않는 계절 속에서도 그는 천천히 크리스마스를 준비하고 있을지 모른다. 12월의 산타가 아닌, 1년의 산타. 기다림의 시간을 한글 레터링으로 풀어낸다.",
-                    "image": "1AY8Gn6ZhZe39yUs6-hAsh07fCN1yJRKE"
+                    "images": [
+                        "1AY8Gn6ZhZe39yUs6-hAsh07fCN1yJRKE"
+                    ]
                 },
                 {
                     "creator": "김하빈",
                     "title": "트릴 메모 연력",
                     "description": "기존 영문 서체인 “Trille” 서체를 기반으로 제작한 한글 레터링 메모 연력이다",
-                    "image": "1olrWdfVQUOy3tGmXauSXHkgdioAKmuGI"
+                    "images": [
+                        "1olrWdfVQUOy3tGmXauSXHkgdioAKmuGI"
+                    ]
                 },
                 {
                     "creator": "두민영",
                     "title": "일기장 달력",
                     "description": "어린 아이가 세상을 바라보는 마음으로 달력을 만들었다. 또박또박하지 않은 유아어로 하루를 적어 내려가며, 한 장 한 장을 작은 일기장처럼 구성했다. 각 달마다 있는 특별한 이벤트를 소주제로 삼아 그날의 설렘과 궁금함을 짧은 글로 담았다. 귀여운 글자와 아기자기한 그림을 더해, 한 해가 순수한 시선으로 기록되도록 표현했다.",
-                    "image": "16j8IEhf0NH3mpcLVrvNAKkoesHgSqqE7"
+                    "images": [
+                        "16j8IEhf0NH3mpcLVrvNAKkoesHgSqqE7"
+                    ]
                 },
                 {
                     "creator": "박선율",
                     "title": "십이간지",
                     "description": "십이간지는 시간을 단순한 숫자가 아닌 상징과 이야기로 풀어내는 전통적 방식이다. 열두 동물이 지닌 성격과 이미지를 달의 흐름에 겹쳐 배치함으로써, 한 해를 보다 감각적이고 서사적으로 경험할 수 있는 달력을 만들고자 했다.",
-                    "image": "1-W62bkZS4eUXgK1-PKjpgOk0A6Szzv1t"
+                    "images": [
+                        "1-W62bkZS4eUXgK1-PKjpgOk0A6Szzv1t"
+                    ]
                 },
                 {
                     "creator": "윤태희",
                     "title": "이달의 멜로디",
                     "description": "‘이달의 멜로디’는 매일의 기분을 음의 높낮이로 기록하는 달력이다. 즐거웠던 날엔 높은 음을, 아쉬웠던 날엔 낮은 음을 원형 스티커로 표현해보자. 한 달이 지나면 당신만의 짧은 악보가 완성된다.",
-                    "image": "1E4UwNINW5JJa34qJmWmjgg1eUVWevVpO"
+                    "images": [
+                        "1E4UwNINW5JJa34qJmWmjgg1eUVWevVpO"
+                    ]
                 },
                 {
                     "creator": "이민서",
                     "title": "점으로 기록",
                     "description": "픽셀 도트로 구성된 한글 연력을 통해 시간을 점의 개수로 표기한 작업이다. 월마다 앞에 더해진 점들은 흐르는 시간의 누적을 상징하며,  글자 구조 위에 반복되는 점은 규칙과 리듬을 드러낸다.",
-                    "image": "1FGR58tC7X26tbt9twAnCeOlJ3QySZGN0"
+                    "images": [
+                        "1FGR58tC7X26tbt9twAnCeOlJ3QySZGN0"
+                    ]
                 },
                 {
                     "creator": "임정연",
                     "title": "모아핌 연력",
                     "description": "모아핌 연력은 열두 달이 모여 하나의 꽃표 형태를 이룬다. 꽃표(별표)는 중요한 부분을 표시하는 기호로, 이 작업에서는 한 해를 가리킨다. 각각의 달력 속 무늬는 단순해 보이지만 지나간 시간들이 모여 하나의 꽃표를 완성하고, 뜻있는 한 해로 남는다는 의미를 담고 있다.",
-                    "image": "1MVGLHMKg0kD2MGnIyJ0Fum_k8RjPg5L-"
+                    "images": [
+                        "1MVGLHMKg0kD2MGnIyJ0Fum_k8RjPg5L-"
+                    ]
                 },
                 {
                     "creator": "최서원",
                     "title": "세계 동물의 날 달력",
                     "description": "플레잉 카드의 형식을 빌려 앞면에는 달력을, 윗면에는 각 달에 해당되는 동물의 일러스트를 넣었다. 달은 일반적으로 쓰이는 숫자 대신 한글 레터링으로 표기했다. 달력 면에서 세계 동물의 날을 확인해 볼 수 있다.",
-                    "image": "1jeVcTjCRkCpYLaiQRgF7Ab9tqhLxT1JA"
+                    "images": [
+                        "1jeVcTjCRkCpYLaiQRgF7Ab9tqhLxT1JA"
+                    ]
                 },
                 {
                     "creator": "최정안",
                     "title": "이공이육",
                     "description": "자소의 조합 구조를 강조한 레터링 달력이다.",
-                    "image": "1wwvE66SH6NJG2R19Hh2IDX1JblFvQsiy"
+                    "images": [
+                        "1wwvE66SH6NJG2R19Hh2IDX1JblFvQsiy"
+                    ]
                 },
                 {
                     "creator": "한미리",
                     "title": "별자리 달력",
                     "description": "별자리 달력은 1부터 12까지의 숫자가 아닌 별자리를 기준으로 달을 나누는 달력이다. 다양한 별자리를 아기자기하고 귀여운 일러스트로 표현했다.",
-                    "image": "1tl4gF-dzMlQuyokXs3mYv0RG98yvMqfg"
+                    "images": [
+                        "1tl4gF-dzMlQuyokXs3mYv0RG98yvMqfg"
+                    ]
                 },
                 {
                     "creator": "한유민",
                     "title": "문장 부호 달력",
                     "description": "한 달에 하나씩, 열두 개의 문장 부호를 소개한다. 각기 다른 서체 속에서 드러나는 문장 부호의 형태적 특징을 관찰하고, 이를 레터링으로 재해석했다.",
-                    "image": "1o2DmvQ5RInSym61AoeVbv3DkaZoMpiah"
+                    "images": [
+                        "1o2DmvQ5RInSym61AoeVbv3DkaZoMpiah"
+                    ]
                 }
             ]
         }
