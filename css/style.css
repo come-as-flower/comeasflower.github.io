@@ -858,7 +858,12 @@ section {
   box-sizing: border-box;
 
   min-height: var(--project-work-min-height);
+  margin-top: auto;
   align-items: flex-end;
+}
+
+body.work-selected .projectDetail > .projectWorksList {
+  display: none;
 }
 
 .projectDetail .work,

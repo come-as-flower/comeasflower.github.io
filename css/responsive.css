@@ -369,19 +369,33 @@
 
     .projectDetail > .projectWorksList {
         width: calc(100vw - 3.6rem);
-        height: clamp(
-            var(--project-work-min-height),
-            42dvh,
-            var(--project-work-max-height)
-        );
-        min-height: var(--project-work-min-height);
-        margin-top: auto;
-        padding-top: var(--project-work-gap);
+        height: auto;
+        min-height: 0;
+        margin-top: 2.4rem;
+        padding-top: 2.4rem;
+        align-items: flex-end;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+        overscroll-behavior-x: contain;
+    }
+
+    .projectDetail > .projectWorksList::-webkit-scrollbar {
+        display: none;
+    }
+
+    .projectDetail > .projectWorksList .work {
+        flex: 0 0 calc(100vw - 8.4rem);
+        width: calc(100vw - 8.4rem);
+        height: auto;
         align-items: flex-end;
     }
 
     .projectDetail .workImg {
-        max-width: calc(100vw - 3.8rem);
-        max-height: 100%;
+        max-width: 100%;
+        max-height: none;
+        width: 100%;
+        height: auto;
+        object-fit: contain;
     }
 }
