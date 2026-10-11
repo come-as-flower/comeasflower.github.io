@@ -22,7 +22,7 @@
     
     header {
         justify-content: center;
-        border-bottom: 1px solid black;
+        border-bottom: none;
     } 
 
     main    {
@@ -214,13 +214,41 @@
     }
 
     .flowerNight {
-        align-items: center;
+        align-items: flex-start;
         min-height: calc(100vh - 17.6rem);
     }
 
     .flowerNightExplanation {
+        width: calc(100vw - 3.6rem);
+        align-items: flex-start;
         gap: 1.8rem;
         padding-bottom: 1.8rem;
+    }
+
+    .flowerNightExplanation h1,
+    .flowerNightExplanation h2,
+    .flowerNightExplanation p {
+        width: 100%;
+    }
+
+    .exhibitionDetailBody .flowerNightDepth {
+        display: flex;
+        flex-direction: column;
+        width: calc(100vw - 3.6rem);
+        gap: 2.4rem;
+    }
+
+    .exhibitionDetailBody .flowerNightExplanation {
+        order: 1;
+    }
+
+    .exhibitionDetailBody .flowerNightDepth > .img {
+        order: 2;
+        width: 100%;
+        max-width: 100%;
+        max-height: none;
+        height: auto;
+        object-fit: contain;
     }
 
     .worksList  {
