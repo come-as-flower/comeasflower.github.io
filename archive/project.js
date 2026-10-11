@@ -59,6 +59,7 @@ let currentProject = null;
 let selectedWorkIndex = null;
 let selectedImageIndex = 0;
 let slideTimer = null;
+let worksCycleTimer = null;
 let baseProjectInfo = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -76,10 +77,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const response = await fetch("../assets/json/project.json");
     const jsonData = await response.json();
 
-    const projectGroups = getProjectGroups(jsonData);
     const projectResult = findProjectById(jsonData, projectId);
-
-    renderGenerationMenu(projectGroups, projectResult?.generationId || "");
 
     if (!projectResult) {
       renderError("프로젝트를 찾을 수 없습니다.");
@@ -90,6 +88,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     currentProject = project;
     cacheBaseProjectInfo(project);
+    renderProjectTagMenu(getAllProjectTags(jsonData));
     renderProject(project);
   } catch (error) {
     console.error("프로젝트 데이터를 불러오는 중 오류 발생:", error);
@@ -100,9 +99,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 function bindViewerControls() {
   const prevButton = document.querySelector(".focusNav.prev");
   const nextButton = document.querySelector(".focusNav.next");
+  const focusViewer = document.getElementById("focusViewer");
 
   prevButton?.addEventListener("click", showPrevImage);
   nextButton?.addEventListener("click", showNextImage);
+
+  document.addEventListener("click", (event) => {
+    if (selectedWorkIndex === null) return;
+    if (focusViewer?.contains(event.target)) return;
+    if (event.target.closest(".workThumbButton")) return;
+
+    clearSelectedWork();
+  });
 
   document.addEventListener("keydown", (event) => {
     if (selectedWorkIndex === null) return;
@@ -162,6 +170,9 @@ function renderProject(project) {
 
     worksList.appendChild(workDiv);
   });
+
+  clearSelectedWork();
+  startWorksListCycle(worksList);
 }
 
 function getProjectGroups(projectData) {
@@ -203,28 +214,44 @@ function getGenerationIdFromKey(key) {
   return match ? match[0] : String(key);
 }
 
-function renderGenerationMenu(groups, selectedGenerationId) {
+function renderProjectTagMenu(tags) {
   const menu = document.querySelector(".listMenu");
   if (!menu) return;
 
   menu.innerHTML = "";
 
-  groups.forEach((group) => {
+  const allTags = ["전체", ...tags];
+
+  allTags.forEach((tag, index) => {
     const item = document.createElement("li");
     item.className = "radioButton";
 
-    if (group.id === selectedGenerationId) {
+    if (index === 0) {
       item.classList.add("selected");
     }
 
     const link = document.createElement("a");
-    link.href = `../archive/#${group.id}`;
-    link.dataset.target = group.id;
-    link.textContent = group.label;
+    link.href = tag === "전체" ? "../archive/#all" : `../archive/#${encodeURIComponent(tag)}`;
+    link.textContent = tag;
 
     item.appendChild(link);
     menu.appendChild(item);
   });
+}
+
+function getProjectTags(project) {
+  return String(project?.output || "")
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+}
+
+function getAllProjectTags(projectData) {
+  return [...new Set(
+    Object.values(projectData)
+      .filter((projects) => Array.isArray(projects))
+      .flatMap((projects) => projects.flatMap((project) => getProjectTags(project)))
+  )];
 }
 
 function selectWork(index) {
@@ -236,6 +263,7 @@ function selectWork(index) {
   selectedWorkIndex = index;
   selectedImageIndex = 0;
 
+  stopWorksListCycle();
   document.body.classList.add("work-selected");
   updateSelectedThumbnail(index);
   updateRightPanel(work);
@@ -253,15 +281,79 @@ function clearSelectedWork() {
   stopAutoSlide();
 
   const viewer = document.getElementById("focusViewer");
+  const inner = viewer?.querySelector(".focusViewerInner");
   const viewerImg = document.getElementById("focusViewerImg");
 
   if (viewer) {
     viewer.hidden = true;
   }
 
+  if (inner) {
+    inner.innerHTML = "";
+  }
+
   if (viewerImg) {
     viewerImg.src = "";
     viewerImg.alt = "";
+  }
+
+  startWorksListCycle(document.querySelector(".projectWorksList"));
+}
+
+function startWorksListCycle(worksList) {
+  stopWorksListCycle();
+
+  if (!worksList) {
+    return;
+  }
+
+  const works = [...worksList.querySelectorAll(".work")];
+  if (works.length < 2) return;
+
+  const beginCycle = () => {
+    const firstWork = works[0];
+    if (!firstWork) return;
+
+    const gap = Number.parseFloat(window.getComputedStyle(worksList).gap || "0") || 0;
+    const step = firstWork.getBoundingClientRect().width + gap;
+    const maxScroll = worksList.scrollWidth - worksList.clientWidth;
+
+    if (step <= 0 || maxScroll <= 0) return;
+
+    worksCycleTimer = setInterval(() => {
+      const nextScroll = worksList.scrollLeft + step;
+
+      if (nextScroll >= maxScroll - 1) {
+        worksList.scrollTo({ left: 0, behavior: "smooth" });
+        return;
+      }
+
+      worksList.scrollTo({ left: nextScroll, behavior: "smooth" });
+    }, 4000);
+  };
+
+  const images = [...worksList.querySelectorAll("img")];
+  if (!images.length || images.every((image) => image.complete)) {
+    requestAnimationFrame(beginCycle);
+    return;
+  }
+
+  let remaining = images.length;
+  const finishLoading = () => {
+    remaining -= 1;
+    if (remaining === 0) requestAnimationFrame(beginCycle);
+  };
+
+  images.forEach((image) => {
+    image.addEventListener("load", finishLoading, { once: true });
+    image.addEventListener("error", finishLoading, { once: true });
+  });
+}
+
+function stopWorksListCycle() {
+  if (worksCycleTimer) {
+    clearInterval(worksCycleTimer);
+    worksCycleTimer = null;
   }
 }
 
@@ -286,7 +378,7 @@ function updateRightPanel(work) {
   }
 
   if (textEls[1]) {
-    textEls[1].textContent = work.creator ? `작업자: ${work.creator}` : "";
+    textEls[1].textContent = work.creator ? work.creator : "";
   }
 
   if (textEls[2]) {
@@ -318,11 +410,17 @@ function restoreProjectInfo() {
 }
 
 function cacheBaseProjectInfo(project) {
+  const creators = [...new Set(
+    (project.works || [])
+      .map((work) => work.creator?.trim())
+      .filter(Boolean)
+  )];
+
   baseProjectInfo = {
     title: project.name || "",
     text1: project.description || "",
-    text2: project.duration ? `작업 기간: ${project.duration}` : "",
-    text3: project.output ? `결과물 형태: ${project.output}` : "",
+    text2: project.duration || "",
+    text3: creators.join(" "),
   };
 }
 
@@ -340,20 +438,35 @@ function normalizeImages(work) {
 
 function updateFocusViewer(images, index) {
   const viewer = document.getElementById("focusViewer");
-  const img = document.getElementById("focusViewerImg");
+  const inner = viewer?.querySelector(".focusViewerInner");
 
-  if (!viewer || !img) return;
+  if (!viewer || !inner) return;
 
   if (!images.length) {
     viewer.hidden = true;
-    img.src = "";
-    img.alt = "";
+    inner.innerHTML = "";
     return;
   }
 
   viewer.hidden = false;
+  inner.innerHTML = "";
+
+  const track = document.createElement("div");
+  track.className = "focusViewerTrack";
+
+  const slide = document.createElement("div");
+  slide.className = "focusViewerSlide";
+
+  const img = document.createElement("img");
+  img.className = "focusViewerImg";
+  img.id = "focusViewerImg";
   img.src = buildImageUrl(images[index], "w1600");
   img.alt = currentProject?.works?.[selectedWorkIndex]?.title || "선택한 작품 이미지";
+  img.loading = "eager";
+
+  slide.appendChild(img);
+  track.appendChild(slide);
+  inner.appendChild(track);
 }
 
 function startAutoSlide(images) {

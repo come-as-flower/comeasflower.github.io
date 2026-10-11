@@ -1,5 +1,8 @@
 const PROJECT_JSON_URL = "../assets/json/project.json";
-const OFFSET = 150;
+const hoverTransitionDelay = 700;
+let archiveProjects = [];
+let hoverTimer = null;
+let imageCycleTimer = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
@@ -10,151 +13,390 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const projectData = await response.json();
+    const allProjects = flattenProjects(projectData);
 
-    renderArchive(projectData);
-    bindArchiveScroll();
+    archiveProjects = allProjects;
+    const activeTag = getArchiveTagFromHash();
+    const visibleProjects = activeTag === "전체"
+      ? allProjects
+      : allProjects.filter((project) => getProjectTags(project).includes(activeTag));
+
+    renderArchive(visibleProjects, activeTag);
+    ensurePreviewShell();
+    selectProject(visibleProjects[0]?.id || "");
   } catch (error) {
     console.error("모아보기 데이터를 불러오는 중 오류 발생:", error);
     renderArchiveError("프로젝트 데이터를 불러오지 못했습니다.");
   }
 });
 
-function renderArchive(projectData) {
+function getProjectEndDate(project) {
+  const duration = project?.duration || "";
+  const matches = [...duration.matchAll(/(\d{4})\.(\d{1,2})\.(\d{1,2})\./g)];
+
+  if (!matches.length) {
+    return 0;
+  }
+
+  const lastMatch = matches[matches.length - 1];
+  const year = Number(lastMatch[1]);
+  const month = Number(lastMatch[2]);
+  const day = Number(lastMatch[3]);
+
+  return new Date(year, month - 1, day).getTime();
+}
+
+function flattenProjects(projectData) {
+  return Object.entries(projectData)
+    .filter(([, projects]) => Array.isArray(projects))
+    .flatMap(([key, projects]) => {
+      const groupNumber = key.match(/\d+/)?.[0] || key;
+
+      return projects
+        .slice()
+        .reverse()
+        .map((project) => ({
+          ...project,
+          generationLabel: `${groupNumber}기`,
+        }));
+    })
+    .sort((a, b) => {
+      const endDateDiff = getProjectEndDate(b) - getProjectEndDate(a);
+
+      if (endDateDiff !== 0) {
+        return endDateDiff;
+      }
+
+      return (a.name || "").localeCompare(b.name || "", "ko");
+    });
+}
+
+function renderArchive(projects, activeTag = "전체") {
   const menu = document.querySelector(".listMenu");
-  const contents = document.querySelector("main.contents");
+  const list = document.querySelector(".archiveProjectList");
 
-  if (!menu || !contents) return;
+  if (menu) {
+    menu.innerHTML = "";
 
-  menu.innerHTML = "";
-  contents.querySelectorAll("section").forEach((section) => section.remove());
+    const tags = [
+      "전체",
+      ...new Set(archiveProjects.flatMap((project) => getProjectTags(project))),
+    ];
 
-  const groups = normalizeProjectGroups(projectData);
+    tags.forEach((tag) => {
+      const item = document.createElement("li");
+      item.className = "radioButton";
+      if (tag === activeTag) item.classList.add("selected");
 
-  groups.forEach((group, groupIndex) => {
-    menu.appendChild(createMenuItem(group, groupIndex === 0));
-    contents.appendChild(createProjectSection(group));
+      const link = document.createElement("a");
+      link.href = tag === "전체" ? "#all" : `#${encodeURIComponent(tag)}`;
+      link.textContent = tag;
+
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        filterArchiveByTag(tag);
+      });
+
+      item.appendChild(link);
+      menu.appendChild(item);
+    });
+  }
+
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  const header = document.createElement("li");
+  header.className = "archiveListHeader";
+  header.innerHTML = `
+    <span>제목</span>
+    <span>형태</span>
+  `;
+  list.appendChild(header);
+
+  projects.forEach((project) => {
+    list.appendChild(createProjectListItem(project));
   });
 }
 
-function normalizeProjectGroups(projectData) {
-  return Object.entries(projectData)
-    .filter(([, projects]) => Array.isArray(projects))
-    .map(([key, projects]) => {
-      const groupNumber = key.match(/\d+/)?.[0] || key;
-
-      return {
-        id: groupNumber,
-        label: `${groupNumber}기`,
-        projects: projects.slice().reverse(),
-      };
-    })
-    .sort((a, b) => Number(b.id) - Number(a.id));
+function getProjectTags(project) {
+  return String(project?.output || "")
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
 }
 
-function createMenuItem(group, isSelected) {
+function filterArchiveByTag(tag) {
+  const filteredProjects = tag === "전체"
+    ? archiveProjects
+    : archiveProjects.filter((project) => getProjectTags(project).includes(tag));
+
+  const hash = tag === "전체" ? "#all" : `#${encodeURIComponent(tag)}`;
+  history.replaceState(null, "", `${window.location.pathname}${hash}`);
+
+  renderArchive(filteredProjects, tag);
+
+  if (filteredProjects.length > 0) {
+    selectProject(filteredProjects[0].id);
+  } else {
+    clearImageCycle();
+  }
+}
+
+function getArchiveTagFromHash() {
+  const rawHash = window.location.hash.slice(1);
+  if (!rawHash || rawHash === "all") return "전체";
+
+  let tag = rawHash;
+  try {
+    tag = decodeURIComponent(rawHash);
+  } catch (error) {
+    return "전체";
+  }
+
+  return archiveProjects.some((project) => getProjectTags(project).includes(tag))
+    ? tag
+    : "전체";
+}
+
+function ensurePreviewShell() {
+  const preview = document.querySelector(".projectPreview");
+  if (!preview || preview.dataset.initialized === "true") return;
+
+  preview.innerHTML = `
+    <div class="projectPreviewHeader">
+      <h2 id="projectPreviewTitle">제목 없음</h2>
+    </div>
+
+    <div class="projectPreviewBody">
+      <p id="projectPreviewDescription"></p>
+      <div class="projectPreviewMeta">
+        <p id="projectPreviewDuration"></p>
+      </div>
+    </div>
+
+    <div class="projectPreviewGallery">
+      <div id="projectPreviewTrack" class="projectPreviewTrack"></div>
+    </div>
+  `;
+
+  preview.dataset.initialized = "true";
+}
+
+function createProjectListItem(project) {
   const item = document.createElement("li");
-  item.className = `radioButton${isSelected ? " selected" : ""}`;
+  item.className = "archiveProjectItem";
 
-  const link = document.createElement("a");
-  link.href = `#${group.id}`;
-  link.dataset.target = group.id;
-  link.textContent = group.label;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "archiveProjectButton";
+  button.dataset.projectId = project.id;
+  button.innerHTML = `
+    <span class="archiveProjectName">${project.name || "제목 없음"}</span>
+    <span class="archiveProjectMeta">${project.output || project.duration || "프로젝트"}</span>
+  `;
 
-  item.appendChild(link);
+  button.addEventListener("click", () => {
+    if (window.matchMedia("(max-width: 1200px)").matches) {
+      window.location.href = `./project-detail.html?id=${encodeURIComponent(project.id)}`;
+      return;
+    }
+
+    selectProject(project.id);
+  });
+
+  item.appendChild(button);
   return item;
 }
 
-function createProjectSection(group) {
-  const section = document.createElement("section");
-  section.id = group.id;
+function selectProject(projectId) {
+  if (!projectId) return;
 
-  group.projects.forEach((project) => {
-    section.appendChild(createProjectArticle(project));
+  const project = archiveProjects.find((item) => item.id === projectId);
+  if (!project) return;
+
+  document.querySelectorAll(".archiveProjectButton").forEach((button) => {
+    button.classList.toggle("is-selected", button.dataset.projectId === projectId);
   });
 
-  return section;
+  updateProjectPreview(project);
 }
 
-function createProjectArticle(project) {
-  const article = document.createElement("article");
-  const articleContent = createProjectArticleContent(project);
+function updateProjectPreview(project) {
+  ensurePreviewShell();
 
-  if (project.id) {
-    const link = document.createElement("a");
-    link.href = `./project-detail.html?id=${encodeURIComponent(project.id)}`;
-    link.appendChild(articleContent.text);
-    link.appendChild(articleContent.image);
+  const title = document.getElementById("projectPreviewTitle");
+  const description = document.getElementById("projectPreviewDescription");
+  const duration = document.getElementById("projectPreviewDuration");
+  const track = document.getElementById("projectPreviewTrack");
 
-    article.appendChild(link);
-    return article;
+  if (title) title.textContent = project.name || "제목 없음";
+  if (description) description.textContent = project.description || "";
+  if (duration) duration.textContent = project.duration || "";
+
+  const images = getProjectImageSequence(project);
+  const gallery = track?.closest(".projectPreviewGallery");
+  if (track) {
+    if (images.length > 0) {
+      startImageCycle(images, track, gallery);
+    } else {
+      track.innerHTML = "";
+      clearImageCycle();
+    }
   }
 
-  article.appendChild(articleContent.text);
-  article.appendChild(articleContent.image);
-  return article;
+  bindPreviewHover(project.id);
 }
 
-function createProjectArticleContent(project) {
-  const text = document.createElement("div");
-  text.className = "articleText";
+function isUsableImageValue(value) {
+  if (typeof value !== "string") return false;
 
-  const title = document.createElement("h1");
-  title.textContent = project.name || "제목 없음";
+  const trimmedValue = value.trim();
+  if (!trimmedValue) return false;
+  if (trimmedValue === "이미지 링크" || trimmedValue === "undefined" || trimmedValue === "null") {
+    return false;
+  }
 
-  const description = document.createElement("p");
-  description.textContent = project.description || "";
+  return true;
+}
 
-  text.appendChild(title);
-  text.appendChild(description);
+function startImageCycle(images, trackElement, galleryElement = trackElement.parentElement) {
+  clearImageCycle();
 
-  return {
-    text,
-    image: createProjectImage(project),
+  const validImages = (images || []).filter(isUsableImageValue);
+  if (!validImages.length || !trackElement) return;
+
+  trackElement.innerHTML = "";
+
+  validImages.forEach((imageUrl) => {
+    const slide = document.createElement("div");
+    slide.className = "projectPreviewSlide";
+
+    const img = document.createElement("img");
+    img.src = buildImageUrl(imageUrl, "w1200");
+    img.alt = "프로젝트 이미지";
+    img.loading = "eager";
+
+    slide.appendChild(img);
+    trackElement.appendChild(slide);
+  });
+
+  const beginCycle = () => {
+    const firstSlide = trackElement.querySelector(".projectPreviewSlide");
+    if (!firstSlide) return;
+
+    const computedStyle = window.getComputedStyle(trackElement);
+    const gap = Number.parseFloat(computedStyle.gap || "24") || 24;
+    const slideWidth = firstSlide.getBoundingClientRect().width;
+    const step = slideWidth + gap;
+    const viewportWidth = galleryElement ? galleryElement.clientWidth : trackElement.clientWidth;
+    const maxTranslate = Math.max(trackElement.scrollWidth - viewportWidth, 0);
+
+    trackElement.style.transition = "transform 0.9s ease";
+    trackElement.style.willChange = "transform";
+    trackElement.style.transform = "translate3d(0, 0, 0)";
+
+    if (maxTranslate <= 0) {
+      return;
+    }
+
+    let currentTranslate = 0;
+    imageCycleTimer = setInterval(() => {
+      currentTranslate += step;
+
+      if (currentTranslate >= maxTranslate - 1) {
+        currentTranslate = 0;
+        trackElement.style.transform = "translate3d(0, 0, 0)";
+        return;
+      }
+
+      trackElement.style.transform = `translate3d(-${currentTranslate}px, 0, 0)`;
+    }, 2600);
   };
-}
 
-function createProjectImage(project) {
-  const thumbnail = getProjectThumbnail(project);
-
-  if (!thumbnail) {
-    const placeholder = document.createElement("div");
-    placeholder.className = "articleImg";
-    placeholder.setAttribute("aria-hidden", "true");
-    return placeholder;
+  const imagesToLoad = [...trackElement.querySelectorAll("img")];
+  if (!imagesToLoad.length) {
+    beginCycle();
+    return;
   }
 
-  const image = document.createElement("img");
-  image.className = "articleImg";
-  image.src = buildImageUrl(thumbnail, "w1000");
-  image.alt = project.name || "프로젝트 이미지";
+  let remaining = imagesToLoad.length;
+  imagesToLoad.forEach((img) => {
+    const finish = () => {
+      remaining -= 1;
+      if (remaining === 0) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(beginCycle);
+        });
+      }
+    };
 
-  return image;
+    if (img.complete) {
+      finish();
+      return;
+    }
+
+    img.addEventListener("load", finish, { once: true });
+    img.addEventListener("error", finish, { once: true });
+  });
 }
 
-function getProjectThumbnail(project) {
-  if (project.image) {
-    return project.image;
+function clearImageCycle() {
+  if (imageCycleTimer) {
+    clearInterval(imageCycleTimer);
+    imageCycleTimer = null;
   }
+}
 
-  const firstWorkWithImage = (project.works || []).find((work) => {
-    return work.image || (Array.isArray(work.images) && work.images.length > 0);
+function getProjectImageSequence(project) {
+  const images = [];
+
+  (project.works || []).forEach((work) => {
+    normalizeImages(work).forEach((imageUrl) => {
+      if (isUsableImageValue(imageUrl)) {
+        images.push(imageUrl);
+      }
+    });
   });
 
-  if (!firstWorkWithImage) return "";
-
-  return normalizeImages(firstWorkWithImage)[0] || "";
+  if (images.length > 0) return [...new Set(images)];
+  if (isUsableImageValue(project.image)) return [project.image];
+  return [];
 }
 
 function normalizeImages(work) {
+  if (!work) return [];
+
   if (Array.isArray(work.images) && work.images.length > 0) {
-    return work.images;
+    return work.images.filter(isUsableImageValue);
   }
 
-  if (work.image) {
+  if (isUsableImageValue(work.image)) {
     return [work.image];
   }
 
   return [];
+}
+
+function bindPreviewHover(projectId) {
+  const panel = document.querySelector(".archivePreviewPanel");
+  if (!panel) return;
+
+  panel.onmouseenter = () => {
+    clearPreviewNavigation();
+    hoverTimer = setTimeout(() => {
+      window.location.href = `./project-detail.html?id=${encodeURIComponent(projectId)}`;
+    }, hoverTransitionDelay);
+  };
+
+  panel.onmouseleave = clearPreviewNavigation;
+}
+
+function clearPreviewNavigation() {
+  if (hoverTimer) {
+    clearTimeout(hoverTimer);
+    hoverTimer = null;
+  }
 }
 
 function buildImageUrl(value, size = "w1600") {
@@ -174,179 +416,18 @@ function buildImageUrl(value, size = "w1600") {
   return `https://drive.google.com/thumbnail?id=${value}&sz=${size}`;
 }
 
-function bindArchiveScroll() {
-  const links = Array.from(
-    document.querySelectorAll(".listMenu .radioButton a"),
-  );
-  const items = Array.from(document.querySelectorAll(".listMenu .radioButton"));
-  const sections = Array.from(document.querySelectorAll("main > section"));
-
-  if (links.length === 0 || items.length === 0 || sections.length === 0) return;
-
-  let isAutoScrolling = false;
-
-  function getTargetId(link) {
-    return (
-      link.dataset.target || link.getAttribute("href")?.replace("#", "") || ""
-    );
-  }
-
-  function scrollToSection(targetId, smooth = true) {
-    const target = document.getElementById(targetId);
-    if (!target) return;
-
-    const targetPosition =
-      target.getBoundingClientRect().top + window.scrollY - OFFSET;
-
-    window.scrollTo({
-      top: targetPosition,
-      behavior: smooth ? "smooth" : "auto",
-    });
-  }
-
-  function setSelected(targetId) {
-    items.forEach((item) => {
-      const link = item.querySelector("a");
-      const itemTargetId = link ? getTargetId(link) : "";
-      item.classList.toggle("selected", itemTargetId === targetId);
-    });
-  }
-
-  function waitForScrollEnd(targetId) {
-    const target = document.getElementById(targetId);
-    if (!target) {
-      isAutoScrolling = false;
-      return;
-    }
-
-    const check = () => {
-      const targetPosition =
-        target.getBoundingClientRect().top + window.scrollY - OFFSET;
-      const distance = Math.abs(window.scrollY - targetPosition);
-
-      if (distance < 4) {
-        isAutoScrolling = false;
-        setSelected(targetId);
-        return;
-      }
-
-      requestAnimationFrame(check);
-    };
-
-    requestAnimationFrame(check);
-  }
-
-  links.forEach((link) => {
-    link.addEventListener("click", (event) => {
-      event.preventDefault();
-
-      const targetId = getTargetId(link);
-      if (!targetId) return;
-
-      isAutoScrolling = true;
-
-      setSelected(targetId);
-      scrollToSection(targetId, true);
-
-      history.replaceState(null, "", `#${targetId}`);
-      waitForScrollEnd(targetId);
-    });
-  });
-
-  if (window.location.hash) {
-    const hashId = window.location.hash.substring(1);
-    const hashTarget = document.getElementById(hashId);
-
-    if (hashTarget) {
-      setSelected(hashId);
-      setTimeout(() => {
-        scrollToSection(hashId, false);
-      }, 50);
-    }
-  }
-
-  window.addEventListener("scroll", () => {
-    if (isAutoScrolling) return;
-
-    const scrollPosition = window.scrollY;
-    let currentSectionId = "";
-
-    sections.forEach((section) => {
-      const sectionTop = section.offsetTop;
-      const sectionHeight = section.offsetHeight;
-
-      if (
-        scrollPosition >= sectionTop - OFFSET &&
-        scrollPosition < sectionTop + sectionHeight - OFFSET
-      ) {
-        currentSectionId = section.id;
-      }
-    });
-
-    if (currentSectionId) {
-      setSelected(currentSectionId);
-    }
-  });
-}
-
 function renderArchiveError(message) {
-  const contents = document.querySelector("main.contents");
-  if (!contents) return;
+  const list = document.querySelector(".archiveProjectList");
+  const preview = document.querySelector(".projectPreview");
 
-  contents.querySelectorAll("section").forEach((section) => section.remove());
-
-  const error = document.createElement("p");
-  error.textContent = message;
-  contents.appendChild(error);
-}
-
-function buildImageUrl(value, size = "w1000") {
-  if (!value) return "";
-
-  const src = String(value).trim();
-
-  if (!src) return "";
-
-  // 1. 구글 드라이브 공유 링크인 경우
-  const driveIdFromUrl = getGoogleDriveId(src);
-  if (driveIdFromUrl) {
-    return `https://drive.google.com/thumbnail?id=${driveIdFromUrl}&sz=${size}`;
+  if (list) {
+    list.innerHTML = `
+      <li class="archiveListHeader"><span>제목</span><span>형태</span></li>
+      <li class="archiveProjectItem"><button type="button" class="archiveProjectButton is-selected" disabled>${message}</button></li>
+    `;
   }
 
-  // 2. 일반 외부 URL인 경우
-  if (src.startsWith("http://") || src.startsWith("https://")) {
-    return src;
+  if (preview) {
+    preview.innerHTML = `<p class="archiveErrorText">${message}</p>`;
   }
-
-  // 3. 로컬 파일 경로인 경우
-  if (isLocalImagePath(src)) {
-    return src;
-  }
-
-  // 4. 그 외에는 구글 드라이브 파일 ID로 간주
-  return `https://drive.google.com/thumbnail?id=${src}&sz=${size}`;
-}
-
-function getGoogleDriveId(value) {
-  if (!value.includes("drive.google.com")) return "";
-
-  const queryMatch = value.match(/[?&]id=([^&]+)/);
-  if (queryMatch) return queryMatch[1];
-
-  const fileMatch = value.match(/\/file\/d\/([^/]+)/);
-  if (fileMatch) return fileMatch[1];
-
-  const thumbnailMatch = value.match(/thumbnail\?id=([^&]+)/);
-  if (thumbnailMatch) return thumbnailMatch[1];
-
-  return "";
-}
-
-function isLocalImagePath(value) {
-  return (
-    value.startsWith("/") ||
-    value.startsWith("./") ||
-    value.startsWith("../") ||
-    /\.(png|jpe?g|webp|gif|svg)$/i.test(value)
-  );
 }
