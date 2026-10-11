@@ -574,27 +574,63 @@ section {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 2.4rem;
 }
 
 .focusViewer {
-  width: calc(50vw - 4.8rem);
-  height: calc(100vh - 18.6rem);
+  width: fit-content;
+  max-width: calc(50vw - 4.8rem);
+  height: auto;
   position: absolute;
+  right: calc(50vw + 2.4rem);
+  left: auto;
   overflow: hidden;
   z-index: 1;
 }
 
+body.work-selected .projectDetail .focusViewer {
+  display: flex;
+  justify-content: end;
+  right: calc(50vw + 2.4rem);
+  width: calc(50vw - 2.4rem);
+  max-width: calc(50vw - 2.4rem);
+  height: calc(100vh - 18.6rem);
+}
+
 .focusViewerInner {
-  width: 100%;
-  height: 100%;
+  width: fit-content;
+  height: auto;
+  overflow: hidden;
+  position: relative;
+}
+
+.focusViewerTrack {
+  display: flex;
+  width: max-content;
+  height: auto;
+  transition: none;
+  will-change: auto;
+}
+
+.focusViewerSlide {
+  flex: 0 0 auto;
+  width: auto;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .focusViewerImg {
+  width: auto;
+  height: auto;
   max-width: calc(50vw - 4.8rem - 2px);
   max-height: calc(100vh - 18.6rem - 2px);
   border: var(--border-syle);
   object-fit: contain;
   display: block;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .focusNav {
@@ -651,16 +687,35 @@ section {
 .flowerNightExplanation {
   margin: 0px;
   display: flex;
+  width: calc(50vw - 2.4rem);
   flex-direction: column;
-  align-items: flex-end;
-  gap: 6rem;
-  padding-bottom: 6rem;
+  gap: 2.4rem;
+  padding-bottom: 0;
+}
+
+@media screen and (min-width: 1201px) {
+  .flowerNight > .flowerNightExplanation {
+    margin-left: auto;
+  }
+}
+
+.flowerNightExplanation h2 {
+  width: calc(50vw - 2.4rem);
+  border-bottom: var(--border-syle);
+  padding-bottom: 1.8rem;
+  margin: 0;
+  line-height: 150%;
 }
 
 .flowerNightText {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.8rem;
+}
+
+.flowerNightText p {
+  width: calc(50vw - 2.4rem);
+  margin: 0;
 }
 
 .scroll-x {
