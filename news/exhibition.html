@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="website" property="og:type">
     <meta property="og:site_name" content="//comeasflower.github.io/">
-    <title>꽃: 소식 - 꽃밤 여섯, 꽃꽂이</title>
+    <title>꽃: 소식 - 꽃밤</title>
     <meta property="og:title" content="타이포그래피 꽃">
     <meta property="og:image" content="/assets/img/thumbnail.jpg">
     <meta property="og:description" content="이화여자대학교 타이포그래피 동아리 꽃">
@@ -13,8 +13,10 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/responsive.css">
     <link rel="stylesheet" href="../css/transitions.css">
+    <script src="../site-utils.js"></script>
+    <script src="./exhibition.js" defer blocking="render"></script>
 </head>
-<body class="exhibitionDetailBody">
+<body class="exhibitionDetailBody detail-loading">
     <header>
         <button class="logo">
             <a href="../">
@@ -52,7 +54,7 @@
             </ol>
         </div>
     </header>
-    <main class="contents">
+    <main class="contents" aria-busy="true">
         <nav class="mobilePageMenu">
             <ul>
                 <a href="../flower/">소개</a>
@@ -67,9 +69,10 @@
         <section>
             <article class="flowerNight">
                 <div class="flowerNightDepth">
-                    <img class="img border" src="../assets/img/flower_night.jpg" alt="꽃밤">
+                    <div class="detailImagePlaceholder" aria-hidden="true"></div>
+                    <img class="img border" decoding="sync" fetchpriority="high" alt="전시 이미지" hidden>
                     <div class="flowerNightExplanation">
-                        <h2></h2>
+                        <h2>전시 정보를 불러오는 중입니다.</h2>
                         <div class="flowerNightText">
                             <p></p>
                             <p></p>
@@ -81,6 +84,5 @@
         </section>
     </main>
     <script src="../main.js"></script>
-    <script src="./exhibition.js"></script>
 </body>
 </html>

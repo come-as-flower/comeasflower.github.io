@@ -1,18 +1,15 @@
 const PROJECT_JSON_URL = "../assets/json/project.json";
 const hoverTransitionDelay = 700;
 let archiveProjects = [];
+let archiveProjectData = null;
 let hoverTimer = null;
 let imageCycleTimer = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    const response = await fetch(PROJECT_JSON_URL);
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const projectData = await response.json();
+    const projectData = await FlowerSite.fetchJSON(PROJECT_JSON_URL);
+    FlowerSite.saveData("projects", projectData);
+    archiveProjectData = projectData;
     const allProjects = flattenProjects(projectData);
 
     archiveProjects = allProjects;
@@ -197,6 +194,7 @@ function createProjectListItem(project) {
   `;
 
   button.addEventListener("click", () => {
+    FlowerSite.saveData("project-handoff", { projectId: project.id, data: archiveProjectData });
     if (window.matchMedia("(max-width: 1200px)").matches) {
       window.location.href = `./project-detail.html?id=${encodeURIComponent(project.id)}`;
       return;
