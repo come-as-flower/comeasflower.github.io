@@ -76,6 +76,14 @@
         display: block;
     }
 
+    .menu-open .hambugerMenu {
+        display: none;
+    }
+
+    .menu-open .close {
+        display: block;
+    }
+
     .mobilePageMenu {
         display: block;
         position: fixed;

@@ -18,15 +18,13 @@
 </head>
 <body class="exhibitionDetailBody detail-loading">
     <header>
-        <button class="logo">
-            <a href="../">
+        <a class="logo" href="../" aria-label="꽃 홈">
                 <img class="logoImg" src="../assets/img/logo.png" alt="꽃">
             </a>
-        </button>
         <div class="menu">
             <ul class="pageMenu">
                 <li class="back">
-                    <button onclick="goBack()">
+                    <button type="button" onclick="goBack()" aria-label="뒤로 가기">
                         <img src="../assets/icon/back.svg" alt="back">
                     </button>
                 </li>
@@ -38,10 +36,10 @@
                     <a href="../archive/">모아보기</a>
                 </li>
                 <li class="hambugerMenu">
-                    <img src="../assets/icon/menu.svg" alt="menu">
+                    <button type="button" aria-label="메뉴 열기"><img src="../assets/icon/menu.svg" alt="menu"></button>
                 </li>
                 <li class="close">
-                    <img src="../assets/icon/close.svg" alt="close">
+                    <button type="button" aria-label="메뉴 닫기"><img src="../assets/icon/close.svg" alt="close"></button>
                 </li>
             </ul>
             <div class="line"></div>

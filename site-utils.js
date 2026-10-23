@@ -201,7 +201,12 @@ window.FlowerSite = (() => {
         releaseTimer = setTimeout(reset, motion.matches ? 0 : 900);
       }, 180);
     }, { passive: false });
-
+    list.addEventListener("keydown", (event) => {
+      if (event.target !== list || !["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+      event.preventDefault();
+      list.scrollBy({ left: list.clientWidth * (event.key === "ArrowLeft" ? -0.8 : 0.8),
+        behavior: motion.matches ? "instant" : "smooth" });
+    });
   }
 
   const pageKey = () => location.pathname + location.search + location.hash;

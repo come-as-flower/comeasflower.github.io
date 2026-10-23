@@ -90,8 +90,31 @@ button {
   color: inherit;
   border: none;
   cursor: pointer;
-  outline: inherit;
   padding: 0;
+}
+
+:is(a, button, [tabindex]):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
+.worksList:focus-visible {
+  outline-offset: -2px;
+}
+
+.hambugerMenu button,
+.close button {
+  display: block;
+  line-height: 0;
+}
+
+.desktopBack {
+  align-self: flex-start;
+  flex-shrink: 0;
+}
+
+.desktopBack img {
+  display: block;
 }
 
 ul {
@@ -147,6 +170,10 @@ section {
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  width: auto;
   margin-left: 2.4rem;
   background-color: var(--bg-color);
 }
@@ -1020,6 +1047,19 @@ body.work-selected .projectDetail .desktopBack img {
   width: 100%;
   height: var(--project-work-min-height);
   background: #f2f2f2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html,
+  .worksList {
+    scroll-behavior: auto;
+  }
+
+  .projectPreviewTrack,
+  .workImg,
+  .mobilePageMenu {
+    transition: none !important;
+  }
 }
 
 
