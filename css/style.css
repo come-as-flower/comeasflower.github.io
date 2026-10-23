@@ -297,6 +297,7 @@ section {
 }
 
 .archiveProjectButton {
+  box-sizing: border-box;
   width: 100%;
   display: flex;
   align-items: center;
@@ -557,6 +558,15 @@ img.is-image-loaded {
   box-sizing: border-box;
 }
 
+.worksList > .work {
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+}
+
+.worksList.is-wheel-scrolling {
+  scroll-snap-type: none;
+}
+
 .workImg {
   max-width: calc(25vw - 3.8rem);
   max-height: calc(100vh - 44.2rem);
@@ -671,26 +681,47 @@ body.work-selected .projectDetail .focusViewer {
   display: block;
   flex-shrink: 0;
   box-sizing: border-box;
+  cursor: default;
+}
+
+body.work-selected .projectDetail {
+  cursor: url("../assets/icon/close.svg") 20 20, pointer;
+}
+
+body.work-selected .projectDetail :not(.focusViewerImg):not(.focusNav):not(.desktopBack) {
+  cursor: url("../assets/icon/close.svg") 20 20, pointer;
+}
+
+body.work-selected .projectDetail .desktopBack,
+body.work-selected .projectDetail .desktopBack img {
+  cursor: pointer;
 }
 
 .focusNav {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 0;
+  bottom: 0;
   z-index: 2;
   border: none;
-  background: rgba(255,255,255,0.8);
-  width: 4rem;
-  height: 4rem;
-  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  min-height: 0;
+  width: 50%;
+  height: 100%;
+  appearance: none;
+  background: transparent;
+  cursor: default;
 }
 
 .focusNav.prev {
-  left: 1.2rem;
+  left: 0;
+  cursor: url("../assets/icon/back.svg") 20 20, pointer;
 }
 
 .focusNav.next {
-  right: 1.2rem;
+  right: 0;
+  cursor: url("../assets/icon/back-flipped.svg") 20 20, pointer;
 }
 
 .work.is-selected {
@@ -846,6 +877,27 @@ body.work-selected .projectDetail .focusViewer {
 .next:hover {
   background-color: rgba(0, 0, 0, 0.8);
   color: var(--bg-color);
+}
+
+.focusViewerInner .focusNav {
+  top: 0;
+  bottom: 0;
+  transform: none;
+  padding: 0;
+  font-size: 0;
+  color: transparent;
+  background: transparent;
+  height: 100%;
+}
+
+.focusViewerInner .focusNav.prev {
+  left: 0;
+  right: auto;
+}
+
+.focusViewerInner .focusNav.next {
+  right: 0;
+  left: auto;
 }
 
 .content-left {
@@ -1011,4 +1063,13 @@ body.work-selected .projectDetail > .projectWorksList {
   max-width: calc(25vw - 3.8rem);
   max-height: 100%;
   object-fit: contain;
+}
+
+.projectCreatorButton {
+  padding: 0;
+  font: inherit;
+  line-height: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
 }

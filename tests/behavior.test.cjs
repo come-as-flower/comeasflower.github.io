@@ -92,6 +92,84 @@ function browser() {
     intervalCount: () => [...timers.values()].filter((timer) => timer.repeat).length };
 }
 
+test("mixed cached, pending and failed images start exactly one cycle", () => {
+  const env = browser();
+  const cached = Object.assign(new EventTarget(), { complete: true });
+  const pending = Object.assign(new EventTarget(), { complete: false });
+  const failed = Object.assign(new EventTarget(), { complete: false });
+  const cycle = env.utils.createAutoCycle(env.makeElement(), () => {}, [cached, pending, failed]);
+  env.flushFrames();
+  assert.equal(env.intervalCount(), 0);
+  pending.dispatchEvent(new Event("load"));
+  failed.dispatchEvent(new Event("error"));
+  env.flushFrames();
+  assert.equal(env.intervalCount(), 1);
+  pending.dispatchEvent(new Event("error"));
+  env.flushFrames();
+  assert.equal(env.intervalCount(), 1);
+  cycle.destroy();
+  assert.equal(env.intervalCount(), 0);
+});
+
+test("destroying a gallery cancels pending image callbacks and timers", () => {
+  const env = browser();
+  const image = Object.assign(new EventTarget(), { complete: false });
+  env.utils.createAutoCycle(env.makeElement(), () => {}, [image]).destroy();
+  image.dispatchEvent(new Event("load"));
+  env.fireTimeouts(6000);
+  env.flushFrames();
+  assert.equal(env.timers.size, 0);
+});
+
+test("image timeout permits a slow gallery to continue and does not start twice", () => {
+  const env = browser();
+  const image = Object.assign(new EventTarget(), { complete: false });
+  env.utils.createAutoCycle(env.makeElement(), () => {}, [image]);
+  env.fireTimeouts(6000);
+  env.flushFrames();
+  assert.equal(env.intervalCount(), 1);
+  image.dispatchEvent(new Event("load"));
+  env.flushFrames();
+  assert.equal(env.intervalCount(), 1);
+});
+
+test("autoplay pauses for reduced motion, focus, pointer input and hidden pages", async () => {
+  const env = browser();
+  const element = env.makeElement();
+  env.utils.createAutoCycle(element, () => {});
+  env.flushFrames();
+  assert.equal(env.intervalCount(), 1);
+  env.motion.matches = true;
+  env.motion.dispatchEvent(new Event("change"));
+  assert.equal(env.intervalCount(), 0);
+  env.motion.matches = false;
+  env.motion.dispatchEvent(new Event("change"));
+  assert.equal(env.intervalCount(), 1);
+  env.document.activeElement = element;
+  element.dispatchEvent(new Event("focusin"));
+  assert.equal(env.intervalCount(), 0);
+  env.document.activeElement = null;
+  element.dispatchEvent(new Event("focusout"));
+  await Promise.resolve();
+  assert.equal(env.intervalCount(), 1);
+  element.dispatchEvent(new Event("pointerdown"));
+  env.fireTimeouts(1800);
+  assert.equal(env.intervalCount(), 0, "holding a touch must keep autoplay paused");
+  env.window.dispatchEvent(new Event("pointerup"));
+  env.fireTimeouts(1800);
+  assert.equal(env.intervalCount(), 1);
+  env.document.hidden = true;
+  env.document.dispatchEvent(new Event("visibilitychange"));
+  assert.equal(env.intervalCount(), 0);
+  env.document.hidden = false;
+  env.document.dispatchEvent(new Event("visibilitychange"));
+  assert.equal(env.intervalCount(), 1);
+  env.window.dispatchEvent(new Event("pagehide"));
+  assert.equal(env.intervalCount(), 0);
+  env.window.dispatchEvent(new Event("pageshow"));
+  assert.equal(env.intervalCount(), 1);
+});
+
 test("shared data expires, is consumed once, and tolerates blocked or corrupt storage", () => {
   const env = browser();
   env.utils.saveData("handoff", { id: "flower-night-8" });
@@ -192,4 +270,30 @@ test("project handoff and reload fill project text before any asynchronous fetch
     assert.equal(paragraphs[0].textContent, project.description);
     assert.equal(env.document.body.classList.contains("detail-loading"), false);
   }
+});
+
+test("wheel scrolling preserves browser zoom and uses instant snapping for reduced motion", () => {
+  const env = browser();
+  const list = env.makeElement();
+  Object.assign(list, { scrollWidth: 1000, clientWidth: 300, getBoundingClientRect: () => ({ left: 0 }) });
+  list.children = [0, 224, 448, 672].map((left) => ({
+    getBoundingClientRect: () => ({ width: 200, left: left - list.scrollLeft }),
+  }));
+  env.utils.setupHorizontalScroll(list);
+  env.utils.setupHorizontalScroll(list);
+  const zoom = Object.assign(new Event("wheel", { cancelable: true }),
+    { ctrlKey: true, deltaX: 0, deltaY: 100, deltaMode: 0 });
+  list.dispatchEvent(zoom);
+  assert.equal(zoom.defaultPrevented, false);
+  assert.equal(list.scrollLeft, 0);
+  env.motion.matches = true;
+  let target;
+  list.scrollTo = (position) => { target = position; list.scrollLeft = position.left; };
+  const wheel = Object.assign(new Event("wheel", { cancelable: true }),
+    { deltaX: 0, deltaY: 100, deltaMode: 0 });
+  list.dispatchEvent(wheel);
+  assert.equal(list.scrollLeft, 160, "the wheel handler is only installed once");
+  env.fireTimeouts(180);
+  assert.equal(target.left, 224);
+  assert.equal(target.behavior, "instant");
 });

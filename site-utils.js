@@ -1,5 +1,7 @@
 // 페이지 간 데이터, 이미지 준비, 갤러리 동작을 한곳에서 관리합니다.
 window.FlowerSite = (() => {
+  const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const wheelLists = new WeakSet();
 
   function saveData(key, value) {
     try {
@@ -83,11 +85,131 @@ window.FlowerSite = (() => {
     }
   }
 
+  function createAutoCycle(element, tick, images = [], delay = 4000, onReady = () => {}) {
+    if (!element) return { destroy() {} };
+    let timer;
+    let quietTimer;
+    let ready = false;
+    let destroyed = false;
+    let suspended = false;
+    let interacting = false;
+    let pointerDown = false;
+    const removers = [];
+    const listen = (target, type, handler) => {
+      target.addEventListener(type, handler);
+      removers.push(() => target.removeEventListener(type, handler));
+    };
+    const update = () => {
+      clearInterval(timer);
+      timer = null;
+      if (destroyed || !ready || suspended || document.hidden || motion.matches || interacting ||
+          pointerDown || element.matches(":hover") || element.contains(document.activeElement)) return;
+      timer = setInterval(tick, delay);
+    };
+    const hold = () => {
+      interacting = true;
+      clearTimeout(quietTimer);
+      update();
+      quietTimer = setTimeout(() => { interacting = false; update(); }, 1800);
+    };
+    listen(element, "pointerenter", update);
+    listen(element, "pointerleave", update);
+    listen(element, "focusin", update);
+    listen(element, "focusout", () => queueMicrotask(update));
+    listen(element, "wheel", hold);
+    listen(element, "keydown", hold);
+    listen(element, "pointerdown", () => { pointerDown = true; hold(); });
+    listen(window, "pointerup", () => {
+      if (pointerDown) { pointerDown = false; hold(); }
+    });
+    listen(window, "pointercancel", () => { pointerDown = false; update(); });
+    listen(document, "visibilitychange", update);
+    listen(motion, "change", update);
+    listen(window, "pagehide", () => { suspended = true; update(); });
+    listen(window, "pageshow", () => { suspended = false; pointerDown = false; update(); });
+    const cancelReady = onImagesReady(images, () => { onReady(); ready = true; update(); });
+    return {
+      destroy() {
+        destroyed = true;
+        clearInterval(timer);
+        clearTimeout(quietTimer);
+        cancelReady();
+        removers.forEach((remove) => remove());
+      },
+    };
+  }
+
+  function cycleWorks(worksList, images) {
+    return createAutoCycle(worksList, () => {
+      const first = worksList.querySelector(".work");
+      if (!first) return;
+      const gap = Number.parseFloat(getComputedStyle(worksList).gap) || 0;
+      const step = first.getBoundingClientRect().width + gap;
+      const maxScroll = worksList.scrollWidth - worksList.clientWidth;
+      if (step <= 0 || maxScroll <= 0) return;
+      const next = worksList.scrollLeft + step;
+      worksList.scrollTo({ left: next >= maxScroll - 1 ? 0 : next, behavior: "smooth" });
+    }, images);
+  }
+
+  function setupHorizontalScroll(list) {
+    if (!list || wheelLists.has(list)) return;
+    wheelLists.add(list);
+    let start = 0;
+    let distance = 0;
+    let snapTimer;
+    let releaseTimer;
+    const reset = () => {
+      clearTimeout(snapTimer);
+      clearTimeout(releaseTimer);
+      distance = 0;
+      list.classList.remove("is-wheel-scrolling");
+    };
+    window.addEventListener("pagehide", reset);
+    list.addEventListener("wheel", (event) => {
+      if (event.ctrlKey || list.scrollWidth <= list.clientWidth) return;
+      let delta = Math.abs(event.deltaY) > Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+      if (event.deltaMode === 1) delta *= 16;
+      if (event.deltaMode === 2) delta *= window.innerHeight;
+      const max = list.scrollWidth - list.clientWidth;
+      if (!delta || (list.scrollLeft <= 0 && delta < 0) || (list.scrollLeft >= max && delta > 0)) return;
+      event.preventDefault();
+      list.classList.add("is-wheel-scrolling");
+      clearTimeout(snapTimer);
+      clearTimeout(releaseTimer);
+      if (!distance) start = list.scrollLeft;
+      distance += delta * 1.6;
+      list.scrollLeft += delta * 1.6;
+      snapTimer = setTimeout(() => {
+        const rect = list.getBoundingClientRect();
+        const padding = Number.parseFloat(getComputedStyle(list).scrollPaddingLeft) || 0;
+        const positions = [...list.children]
+          .filter((item) => item.getBoundingClientRect().width > 0)
+          .map((item) => Math.min(max, Math.max(0,
+            item.getBoundingClientRect().left - rect.left + list.scrollLeft - padding)));
+        if (positions.length > 1) {
+          const nearest = positions.reduce((best, pos, i) =>
+            Math.abs(pos - start) < Math.abs(positions[best] - start) ? i : best, 0);
+          const step = positions[nearest + 1] - positions[nearest] || positions[nearest] - positions[nearest - 1];
+          if (step > 0) {
+            const target = Math.max(0, Math.min(positions.length - 1,
+              nearest + Math.sign(distance) * Math.max(1, Math.round(Math.abs(distance) / step))));
+            list.scrollTo({ left: positions[target], behavior: motion.matches ? "instant" : "smooth" });
+          }
+        }
+        distance = 0;
+        releaseTimer = setTimeout(reset, motion.matches ? 0 : 900);
+      }, 180);
+    }, { passive: false });
+
+  }
+
   function finishDetailLoading(error = false) {
     document.body.classList.remove("detail-loading");
     document.body.classList.toggle("detail-error", error);
     document.querySelector("main")?.setAttribute("aria-busy", "false");
   }
 
-  return { saveData, readData, fetchJSON, onImagesReady, setImageLoadingState, finishDetailLoading };
+  return { motion, saveData, readData, fetchJSON, onImagesReady, setImageLoadingState,
+    createAutoCycle, cycleWorks, setupHorizontalScroll, finishDetailLoading };
 })();
