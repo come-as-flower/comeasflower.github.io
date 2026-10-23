@@ -5,26 +5,28 @@
 // 주소창에서 index.html 제거
 if (location.pathname.endsWith("/index.html")) {
   const cleanPath = location.pathname.replace(/index\.html$/, "");
-  history.replaceState(null, "", cleanPath + location.search + location.hash);
+  history.replaceState(history.state, "", cleanPath + location.search + location.hash);
 }
 
 
 // 뒤로 가기
-// 이전 페이지가 존재하면 뒤로 가고, 없으면 홈으로 이동
+// 사이트 내 방문 기록으로 돌아가고, 외부에서 바로 왔으면 목록으로 이동
 function goBack() {
-  if (document.referrer) {
-    sessionStorage.setItem("scrollPosition", String(window.scrollY));
+  FlowerSite.savePageState();
+  if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) {
     history.back();
     return;
   }
 
-  window.location.href = "../index.html";
+  window.location.href = document.body.classList.contains("projectDetailBody")
+    ? "../archive/"
+    : document.body.classList.contains("exhibitionDetailBody") ? "./" : "../";
 }
 
 
 // 페이지 로드 시 스크롤 위치 복원, 모바일 메뉴 설정
 document.addEventListener("DOMContentLoaded", () => {
-  restoreScrollPosition();
+  FlowerSite.restorePageState();
   setupMobileMenu();
   document.querySelectorAll(".worksList").forEach(FlowerSite.setupHorizontalScroll);
 });
@@ -32,13 +34,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // 스크롤 위치 복원
 // 페이지를 떠날 때 현재 스크롤 위치 저장
-function restoreScrollPosition() {
-  const saved = sessionStorage.getItem("scrollPosition");
-  if (!saved) return;
-
-  window.scrollTo(0, parseInt(saved, 10));
-  sessionStorage.removeItem("scrollPosition");
-}
+document.addEventListener("click", (event) => {
+  if (event.target.closest("a[href]")) FlowerSite.savePageState();
+}, { capture: true });
+window.addEventListener("pagehide", () => FlowerSite.savePageState());
+window.addEventListener("pageswap", () => FlowerSite.savePageState());
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) FlowerSite.restorePageState();
+});
 
 
 // 모바일 메뉴 관리

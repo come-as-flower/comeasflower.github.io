@@ -149,7 +149,7 @@ window.FlowerSite = (() => {
       if (step <= 0 || maxScroll <= 0) return;
       const next = worksList.scrollLeft + step;
       worksList.scrollTo({ left: next >= maxScroll - 1 ? 0 : next, behavior: "smooth" });
-    }, images);
+    }, images, 4000, restorePageState);
   }
 
   function setupHorizontalScroll(list) {
@@ -204,12 +204,44 @@ window.FlowerSite = (() => {
 
   }
 
+  const pageKey = () => location.pathname + location.search + location.hash;
+  function readPageState() {
+    const state = history.state?.flowerPage;
+    return state?.url === pageKey() ? state : null;
+  }
+
+  function savePageState(extra = {}) {
+    const scroll = {};
+    document.querySelectorAll("[data-restore-scroll]").forEach((element) => {
+      scroll[element.dataset.restoreScroll] = { left: element.scrollLeft, top: element.scrollTop };
+    });
+    const selectedProjectId = document.querySelector(".archiveProjectList")?.dataset.selectedProjectId;
+    try {
+      history.replaceState({ ...history.state, flowerPage: {
+        ...readPageState(), url: pageKey(), x: window.scrollX, y: window.scrollY,
+        scroll, ...(selectedProjectId ? { selectedProjectId } : {}), ...extra,
+      } }, "");
+    } catch { /* 이탈 중 기록을 갱신할 수 없으면 직전에 저장한 상태를 사용합니다. */ }
+  }
+
+  function restorePageState() {
+    const state = readPageState();
+    if (!state) return;
+    document.querySelectorAll("[data-restore-scroll]").forEach((element) => {
+      const position = state.scroll?.[element.dataset.restoreScroll];
+      if (position) element.scrollTo({ left: position.left, top: position.top, behavior: "instant" });
+    });
+    window.scrollTo({ left: state.x || 0, top: state.y || 0, behavior: "instant" });
+  }
+
   function finishDetailLoading(error = false) {
     document.body.classList.remove("detail-loading");
     document.body.classList.toggle("detail-error", error);
     document.querySelector("main")?.setAttribute("aria-busy", "false");
+    restorePageState();
   }
 
   return { motion, saveData, readData, fetchJSON, onImagesReady, setImageLoadingState,
-    createAutoCycle, cycleWorks, setupHorizontalScroll, finishDetailLoading };
+    createAutoCycle, cycleWorks, setupHorizontalScroll, savePageState, readPageState,
+    restorePageState, finishDetailLoading };
 })();

@@ -19,7 +19,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     renderArchive(visibleProjects, activeTag);
     ensurePreviewShell();
-    selectProject(visibleProjects[0]?.id || "");
+    const savedId = FlowerSite.readPageState()?.selectedProjectId;
+    selectProject(visibleProjects.some((project) => project.id === savedId)
+      ? savedId : visibleProjects[0]?.id || "");
+    FlowerSite.restorePageState();
   } catch (error) {
     console.error("모아보기 데이터를 불러오는 중 오류 발생:", error);
     renderArchiveError("프로젝트 데이터를 불러오지 못했습니다.");
@@ -200,6 +203,8 @@ function createProjectListItem(project) {
   button.addEventListener("focus", () => selectProject(project.id));
   button.addEventListener("click", () => {
     FlowerSite.saveData("project-handoff", { projectId: project.id, data: archiveProjectData });
+    document.querySelector(".archiveProjectList").dataset.selectedProjectId = project.id;
+    FlowerSite.savePageState({ selectedProjectId: project.id });
   });
 
   item.appendChild(button);
@@ -211,6 +216,8 @@ function selectProject(projectId) {
 
   const project = archiveProjects.find((item) => item.id === projectId);
   if (!project) return;
+
+  document.querySelector(".archiveProjectList").dataset.selectedProjectId = projectId;
 
   document.querySelectorAll(".archiveProjectButton").forEach((button) => {
     button.classList.toggle("is-selected", button.dataset.projectId === projectId);
