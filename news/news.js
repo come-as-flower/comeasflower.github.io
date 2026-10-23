@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     renderExhibitions(list, exhibitions);
     startExhibitionCycle(list);
+    FlowerSite.onImagesReady([...list.querySelectorAll("img")], FlowerSite.restorePageState);
   } catch (error) {
     console.error("전시 데이터를 불러오지 못했습니다:", error);
     list.innerHTML = "<p>전시 정보를 불러오지 못했습니다.</p>";
@@ -62,6 +63,7 @@ function renderExhibitions(container, exhibitions) {
 
       if (navigationId !== exhibitionNavigationId) return;
       saveExhibitionHandoff(item, image);
+      FlowerSite.savePageState();
       window.location.assign(card.href);
     });
 

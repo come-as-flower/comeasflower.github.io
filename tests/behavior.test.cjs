@@ -170,6 +170,36 @@ test("autoplay pauses for reduced motion, focus, pointer input and hidden pages"
   assert.equal(env.intervalCount(), 1);
 });
 
+test("each history entry restores its own selected project and both scroll directions", () => {
+  const env = browser();
+  const list = env.makeElement();
+  list.dataset.restoreScroll = "archive-list";
+  list.dataset.selectedProjectId = "12-5";
+  list.scrollLeft = 30; list.scrollTop = 240;
+  env.selectors.set("[data-restore-scroll]", [list]);
+  env.selectors.set(".archiveProjectList", list);
+  env.history.state = { noticePanelOpen: false };
+  env.window.scrollY = 450;
+  env.utils.savePageState();
+  const firstEntry = env.history.state;
+  assert.equal(firstEntry.noticePanelOpen, false);
+  assert.equal(firstEntry.flowerPage.selectedProjectId, "12-5");
+  env.location.pathname = "/news/";
+  env.history.state = null;
+  env.window.scrollY = 90;
+  list.scrollTop = 10;
+  env.utils.savePageState();
+  assert.equal(env.history.state.flowerPage.y, 90);
+  env.location.pathname = "/archive/";
+  env.history.state = firstEntry;
+  env.utils.restorePageState();
+  assert.equal(list.scrollTop, 240);
+  assert.equal(list.scrollLeft, 30);
+  assert.equal(env.restored.at(-1).top, 450);
+  env.location.hash = "#another-filter";
+  assert.equal(env.utils.readPageState(), null);
+});
+
 test("shared data expires, is consumed once, and tolerates blocked or corrupt storage", () => {
   const env = browser();
   env.utils.saveData("handoff", { id: "flower-night-8" });

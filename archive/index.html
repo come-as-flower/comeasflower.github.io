@@ -47,7 +47,7 @@
           </li>
         </ul>
         <div class="line"></div>
-        <ol class="listMenu"></ol>
+        <ol data-restore-scroll="filters" class="listMenu"></ol>
       </div>
     </header>
     <main class="contents archiveLayout">
@@ -64,8 +64,8 @@
       </nav>
 
       <div class="archivePage">
-        <aside class="archiveSidebar">
-          <ul class="archiveProjectList" aria-label="프로젝트 목록"></ul>
+        <aside class="archiveSidebar" data-restore-scroll="archive-sidebar">
+          <ul class="archiveProjectList" data-restore-scroll="archive-list" aria-label="프로젝트 목록"></ul>
         </aside>
 
         <section class="archivePreviewPanel" aria-live="polite">
