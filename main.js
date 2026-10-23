@@ -48,20 +48,31 @@ window.addEventListener("pageshow", (event) => {
 // 모바일 메뉴 열기/닫기, 창 크기 변경 시 메뉴 닫기, 뒤로 가기 시 메뉴 닫기
 // .hambugerMenu, .close, .mobilePageMenu 요소가 존재하는 경우에만 이벤트 리스너 등록
 function setupMobileMenu() {
-  const menuButton = document.querySelector(".hambugerMenu");
-  const closeButton = document.querySelector(".close");
+  const menuButton = document.querySelector(".hambugerMenu button");
+  const closeButton = document.querySelector(".close button");
   const mobileMenu = document.querySelector(".mobilePageMenu");
 
   if (!menuButton || !closeButton || !mobileMenu) return;
 
+  mobileMenu.id = "mobile-navigation";
+  menuButton.setAttribute("aria-controls", mobileMenu.id);
+  menuButton.setAttribute("aria-expanded", "false");
+  mobileMenu.inert = true;
+
   const openMenu = () => {
     mobileMenu.classList.add("active");
     document.body.classList.add("menu-open");
+    mobileMenu.inert = false;
+    menuButton.setAttribute("aria-expanded", "true");
+    closeButton.focus();
   };
 
-  const closeMenu = () => {
+  const closeMenu = (returnFocus = false) => {
     mobileMenu.classList.remove("active");
     document.body.classList.remove("menu-open");
+    mobileMenu.inert = true;
+    menuButton.setAttribute("aria-expanded", "false");
+    if (returnFocus) menuButton.focus();
   };
 
   const toggleMenu = () => {
@@ -81,7 +92,7 @@ function setupMobileMenu() {
 
   closeButton.addEventListener("click", (event) => {
     event.stopPropagation();
-    closeMenu();
+    closeMenu(true);
   });
 
   mobileMenu.addEventListener("click", (event) => {
@@ -103,11 +114,12 @@ function setupMobileMenu() {
     }
   });
 
-  window.addEventListener("popstate", closeMenu);
+  window.addEventListener("popstate", () => closeMenu());
+  window.addEventListener("pageshow", (event) => { if (event.persisted) closeMenu(); });
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
-      closeMenu();
+      closeMenu(document.body.classList.contains("menu-open"));
     }
   });
 }

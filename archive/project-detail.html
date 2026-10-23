@@ -18,15 +18,13 @@
 </head>
 <body class="projectDetailBody detail-loading">
     <header>
-        <button class="logo">
-            <a href="../">
+        <a class="logo" href="../" aria-label="꽃 홈">
                 <img class="logoImg" src="../assets/img/logo.png" alt="꽃">
             </a>
-        </button>
         <div class="menu">
             <ul class="pageMenu">
                 <li class="back">
-                    <button onclick="goBack()">
+                    <button type="button" onclick="goBack()" aria-label="뒤로 가기">
                         <img src="../assets/icon/back.svg" alt="back">
                     </button>
                 </li>
@@ -39,10 +37,10 @@
                     <a href="../news/">소식</a>
                 </li>
                 <li class="hambugerMenu">
-                    <img src="../assets/icon/menu.svg" alt="menu">
+                    <button type="button" aria-label="메뉴 열기"><img src="../assets/icon/menu.svg" alt="menu"></button>
                 </li>
                 <li class="close">
-                    <img src="../assets/icon/close.svg" alt="close">
+                    <button type="button" aria-label="메뉴 닫기"><img src="../assets/icon/close.svg" alt="close"></button>
                 </li>
             </ul>
             <div class="line"></div>
@@ -63,7 +61,7 @@
         </nav>
         <article class="project projectDetail">
             <div class="projectDepth">
-                <img class="desktopBack" onclick="goBack()" src="../assets/icon/back.svg" alt="back">
+                <button class="desktopBack" type="button" onclick="goBack()" aria-label="뒤로 가기"><img src="../assets/icon/back.svg" alt=""></button>
                 <div class="focusViewer" id="focusViewer" hidden>
                     <div class="focusViewerInner">
                         <img class="focusViewerImg" id="focusViewerImg" alt="">
@@ -78,7 +76,7 @@
                     </div>
                 </div>
             </div>
-            <div class="worksList projectWorksList" data-restore-scroll="project-works">
+            <div class="worksList projectWorksList" data-restore-scroll="project-works" tabindex="0" role="region" aria-label="프로젝트 작품 목록">
             </div>
         </article>
     </main>

@@ -27,7 +27,21 @@ button  {
   color: inherit;
   border: none;
   cursor: pointer;
-  outline: inherit;
+}
+
+a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -4px;
+}
+
+.box:focus-within .outterText {
+  visibility: hidden;
+}
+
+.box:focus-within .innerText {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .indexBody {
@@ -68,7 +82,8 @@ button  {
 
 .innerText{
   background-color: #f8f8f8;
-  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
   width: 33vw;
   height: 100vh;
   position: absolute;
@@ -102,6 +117,8 @@ button  {
   
   .box:hover .innerText{
     visibility: visible; /* 호버 시 배경 색상 */  
+    opacity: 1;
+    pointer-events: auto;
   }
 }
 
@@ -131,6 +148,8 @@ button  {
 
   .box.active .innerText {
     visibility: visible; /* 호버 시 배경 색상 */  
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .box.active .outterText {

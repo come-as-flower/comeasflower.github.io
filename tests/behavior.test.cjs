@@ -302,6 +302,28 @@ test("project handoff and reload fill project text before any asynchronous fetch
   }
 });
 
+test("mobile menu exposes expanded state and returns keyboard focus on Escape", () => {
+  const env = browser();
+  const open = env.makeElement();
+  const close = env.makeElement();
+  const navigation = env.makeElement();
+  env.selectors.set(".hambugerMenu button", open);
+  env.selectors.set(".close button", close);
+  env.selectors.set(".mobilePageMenu", navigation);
+  vm.runInContext(source("main.js"), env.context);
+  env.document.dispatchEvent(new Event("DOMContentLoaded"));
+  assert.equal(navigation.inert, true);
+  assert.equal(open.attributes["aria-expanded"], "false");
+  open.dispatchEvent(new Event("click"));
+  assert.equal(navigation.inert, false);
+  assert.equal(open.attributes["aria-expanded"], "true");
+  assert.equal(env.document.activeElement, close);
+  env.document.dispatchEvent(Object.assign(new Event("keydown"), { key: "Escape" }));
+  assert.equal(navigation.inert, true);
+  assert.equal(open.attributes["aria-expanded"], "false");
+  assert.equal(env.document.activeElement, open);
+});
+
 test("wheel scrolling preserves browser zoom and uses instant snapping for reduced motion", () => {
   const env = browser();
   const list = env.makeElement();

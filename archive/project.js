@@ -4,6 +4,7 @@ let selectedImageIndex = 0;
 let slideTimer = null;
 let worksCycleTimer = null;
 let baseProjectInfo = null;
+let lastWorkTrigger = null;
 
 async function initializeProject() {
   const params = new URLSearchParams(window.location.search);
@@ -79,10 +80,12 @@ function bindViewerControls() {
     }
 
     if (event.key === "ArrowLeft") {
+      event.preventDefault();
       showPrevImage();
     }
 
     if (event.key === "ArrowRight") {
+      event.preventDefault();
       showNextImage();
     }
   });
@@ -131,7 +134,7 @@ function renderProject(project) {
       if (selectedWorkIndex === index) {
         clearSelectedWork();
       } else {
-        selectWork(index);
+        selectWork(index, event.detail === 0);
       }
     });
 
@@ -220,12 +223,13 @@ function getAllProjectTags(projectData) {
   )];
 }
 
-function selectWork(index) {
+function selectWork(index, focusViewer = false) {
   if (!currentProject || !currentProject.works?.[index]) return;
 
   const work = currentProject.works[index];
   const images = normalizeImages(work);
 
+  if (selectedWorkIndex === null) lastWorkTrigger = document.activeElement;
   selectedWorkIndex = index;
   selectedImageIndex = 0;
 
@@ -235,6 +239,7 @@ function selectWork(index) {
   updateRightPanel(work);
   updateFocusViewer(images, selectedImageIndex);
   startAutoSlide(images);
+  if (focusViewer) document.querySelector(".focusNav.next")?.focus({ preventScroll: true });
 }
 
 function clearSelectedWork() {
@@ -265,6 +270,8 @@ function clearSelectedWork() {
 
   const worksList = document.querySelector(".projectWorksList");
   startWorksListCycle(worksList);
+  if (lastWorkTrigger?.isConnected) lastWorkTrigger.focus({ preventScroll: true });
+  lastWorkTrigger = null;
 }
 
 function startWorksListCycle(worksList) {
@@ -336,7 +343,7 @@ function restoreProjectInfo() {
       creatorButton.textContent = creator;
       creatorButton.addEventListener("click", (event) => {
         event.stopPropagation();
-        selectCreatorWork(creator);
+        selectCreatorWork(creator, event.detail === 0);
       });
 
       textEls[2].appendChild(creatorButton);
@@ -362,13 +369,13 @@ function cacheBaseProjectInfo(project) {
   };
 }
 
-function selectCreatorWork(creator) {
+function selectCreatorWork(creator, focusViewer = false) {
   const workIndex = (currentProject?.works || []).findIndex(
     (work) => work.creator?.trim() === creator
   );
 
   if (workIndex >= 0) {
-    selectWork(workIndex);
+    selectWork(workIndex, focusViewer);
   }
 }
 
@@ -396,6 +403,8 @@ function updateFocusViewer(images, index) {
     return;
   }
 
+  const focusedControl = document.activeElement?.classList.contains("focusNav")
+    ? (document.activeElement.classList.contains("prev") ? ".prev" : ".next") : null;
   viewer.hidden = false;
   inner.innerHTML = "";
 
@@ -430,6 +439,7 @@ function updateFocusViewer(images, index) {
   nextButton.setAttribute("aria-label", "다음 이미지");
 
   inner.append(previousButton, nextButton);
+  if (focusedControl) inner.querySelector(focusedControl)?.focus({ preventScroll: true });
 }
 
 function startAutoSlide(images) {
