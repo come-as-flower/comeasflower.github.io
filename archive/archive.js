@@ -1,9 +1,8 @@
 const PROJECT_JSON_URL = "../assets/json/project.json";
-const hoverTransitionDelay = 700;
 let archiveProjects = [];
 let archiveProjectData = null;
-let hoverTimer = null;
 let imageCycleTimer = null;
+let selectedArchiveProjectId = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
@@ -184,8 +183,8 @@ function createProjectListItem(project) {
   const item = document.createElement("li");
   item.className = "archiveProjectItem";
 
-  const button = document.createElement("button");
-  button.type = "button";
+  const button = document.createElement("a");
+  button.href = `./project-detail.html?id=${encodeURIComponent(project.id)}`;
   button.className = "archiveProjectButton";
   button.dataset.projectId = project.id;
   button.innerHTML = `
@@ -193,14 +192,14 @@ function createProjectListItem(project) {
     <span class="archiveProjectMeta">${project.output || project.duration || "프로젝트"}</span>
   `;
 
+  button.addEventListener("pointerenter", () => {
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    selectProject(project.id);
+  });
+
+  button.addEventListener("focus", () => selectProject(project.id));
   button.addEventListener("click", () => {
     FlowerSite.saveData("project-handoff", { projectId: project.id, data: archiveProjectData });
-    if (window.matchMedia("(max-width: 1200px)").matches) {
-      window.location.href = `./project-detail.html?id=${encodeURIComponent(project.id)}`;
-      return;
-    }
-
-    selectProject(project.id);
   });
 
   item.appendChild(button);
@@ -217,6 +216,8 @@ function selectProject(projectId) {
     button.classList.toggle("is-selected", button.dataset.projectId === projectId);
   });
 
+  if (selectedArchiveProjectId === projectId) return;
+  selectedArchiveProjectId = projectId;
   updateProjectPreview(project);
 }
 
@@ -243,7 +244,6 @@ function updateProjectPreview(project) {
     }
   }
 
-  bindPreviewHover(project.id);
 }
 
 function isUsableImageValue(value) {
@@ -266,14 +266,17 @@ function startImageCycle(images, trackElement, galleryElement = trackElement.par
 
   trackElement.innerHTML = "";
 
-  validImages.forEach((imageUrl) => {
+  validImages.forEach((imageUrl, index) => {
     const slide = document.createElement("div");
     slide.className = "projectPreviewSlide";
+    slide.classList.add("is-image-loading");
 
     const img = document.createElement("img");
     img.src = buildImageUrl(imageUrl, "w1200");
     img.alt = "프로젝트 이미지";
-    img.loading = "eager";
+    img.loading = index < 2 ? "eager" : "lazy";
+    img.decoding = "async";
+    FlowerSite.setImageLoadingState(img, slide);
 
     slide.appendChild(img);
     trackElement.appendChild(slide);
@@ -299,51 +302,22 @@ function startImageCycle(images, trackElement, galleryElement = trackElement.par
     }
 
     let currentTranslate = 0;
-    imageCycleTimer = setInterval(() => {
-      currentTranslate += step;
-
-      if (currentTranslate >= maxTranslate - 1) {
-        currentTranslate = 0;
-        trackElement.style.transform = "translate3d(0, 0, 0)";
-        return;
-      }
-
+    imageCycleTimer = FlowerSite.createAutoCycle(galleryElement, () => {
+      const width = galleryElement.clientWidth;
+      const maxTranslate = Math.max(trackElement.scrollWidth - width, 0);
+      currentTranslate = currentTranslate + step >= maxTranslate - 1 ? 0 : currentTranslate + step;
       trackElement.style.transform = `translate3d(-${currentTranslate}px, 0, 0)`;
-    }, 2600);
+    }, [], 2600);
   };
 
-  const imagesToLoad = [...trackElement.querySelectorAll("img")];
-  if (!imagesToLoad.length) {
-    beginCycle();
-    return;
-  }
+  imageCycleTimer = { destroy: FlowerSite.onImagesReady(
+    [...trackElement.querySelectorAll("img")].slice(0, 2), beginCycle) };
 
-  let remaining = imagesToLoad.length;
-  imagesToLoad.forEach((img) => {
-    const finish = () => {
-      remaining -= 1;
-      if (remaining === 0) {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(beginCycle);
-        });
-      }
-    };
-
-    if (img.complete) {
-      finish();
-      return;
-    }
-
-    img.addEventListener("load", finish, { once: true });
-    img.addEventListener("error", finish, { once: true });
-  });
 }
 
 function clearImageCycle() {
-  if (imageCycleTimer) {
-    clearInterval(imageCycleTimer);
-    imageCycleTimer = null;
-  }
+  imageCycleTimer?.destroy();
+  imageCycleTimer = null;
 }
 
 function getProjectImageSequence(project) {
@@ -374,27 +348,6 @@ function normalizeImages(work) {
   }
 
   return [];
-}
-
-function bindPreviewHover(projectId) {
-  const panel = document.querySelector(".archivePreviewPanel");
-  if (!panel) return;
-
-  panel.onmouseenter = () => {
-    clearPreviewNavigation();
-    hoverTimer = setTimeout(() => {
-      window.location.href = `./project-detail.html?id=${encodeURIComponent(projectId)}`;
-    }, hoverTransitionDelay);
-  };
-
-  panel.onmouseleave = clearPreviewNavigation;
-}
-
-function clearPreviewNavigation() {
-  if (hoverTimer) {
-    clearTimeout(hoverTimer);
-    hoverTimer = null;
-  }
 }
 
 function buildImageUrl(value, size = "w1600") {

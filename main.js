@@ -26,6 +26,7 @@ function goBack() {
 document.addEventListener("DOMContentLoaded", () => {
   restoreScrollPosition();
   setupMobileMenu();
+  document.querySelectorAll(".worksList").forEach(FlowerSite.setupHorizontalScroll);
 });
 
 

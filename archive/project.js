@@ -1,60 +1,3 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const worksList = document.querySelector(".worksList");
-  if (!worksList) return;
-
-  const normalizeWheelDelta = (event) => {
-    let delta = Math.abs(event.deltaY) > Math.abs(event.deltaX)
-      ? event.deltaY
-      : event.deltaX;
-
-    // deltaMode 보정
-    // 0: pixel, 1: line, 2: page
-    if (event.deltaMode === WheelEvent.DOM_DELTA_LINE) {
-      delta *= 16;
-    } else if (event.deltaMode === WheelEvent.DOM_DELTA_PAGE) {
-      delta *= window.innerHeight;
-    }
-
-    return delta;
-  };
-
-  worksList.addEventListener(
-    "wheel",
-    (event) => {
-      const hasHorizontalOverflow =
-        worksList.scrollWidth > worksList.clientWidth;
-
-      if (!hasHorizontalOverflow) return;
-
-      const delta = normalizeWheelDelta(event);
-      if (delta === 0) return;
-
-      const maxScrollLeft = worksList.scrollWidth - worksList.clientWidth;
-      const currentScrollLeft = worksList.scrollLeft;
-
-      const isScrollingRight = delta > 0;
-      const isScrollingLeft = delta < 0;
-
-      const canScrollRight = currentScrollLeft < maxScrollLeft;
-      const canScrollLeft = currentScrollLeft > 0;
-
-      // 가로 스크롤이 더 이상 불가능하면 세로 페이지 스크롤을 막지 않음
-      if (
-        (isScrollingRight && !canScrollRight) ||
-        (isScrollingLeft && !canScrollLeft)
-      ) {
-        return;
-      }
-
-      event.preventDefault();
-
-      const speed = 1.6;
-      worksList.scrollLeft += delta * speed;
-    },
-    { passive: false }
-  );
-});
-
 let currentProject = null;
 let selectedWorkIndex = null;
 let selectedImageIndex = 0;
@@ -107,18 +50,24 @@ async function initializeProject() {
 initializeProject();
 
 function bindViewerControls() {
-  const prevButton = document.querySelector(".focusNav.prev");
-  const nextButton = document.querySelector(".focusNav.next");
   const focusViewer = document.getElementById("focusViewer");
 
-  prevButton?.addEventListener("click", showPrevImage);
-  nextButton?.addEventListener("click", showNextImage);
+  focusViewer?.addEventListener("click", (event) => {
+    const navigationButton = event.target.closest(".focusNav");
+    if (!navigationButton) return;
+
+    event.stopPropagation();
+    if (navigationButton.classList.contains("prev")) {
+      showPrevImage();
+    } else {
+      showNextImage();
+    }
+  });
 
   document.addEventListener("click", (event) => {
     if (selectedWorkIndex === null) return;
-    if (focusViewer?.contains(event.target)) return;
+    if (event.target.closest(".focusViewerImg, .focusNav")) return;
     if (event.target.closest(".workThumbButton")) return;
-
     clearSelectedWork();
   });
 
@@ -161,7 +110,9 @@ function renderProject(project) {
       )} 보기">
         ${
           thumbSrc
-            ? `<img class="workImg border" src="${thumbSrc}" alt="${escapeHtml(
+            ? `<img class="workImg border" src="${thumbSrc}" loading="${
+                index < 2 ? "eager" : "lazy"
+              }" decoding="async" alt="${escapeHtml(
                 work.title || work.creator || "작품 이미지"
               )}">`
             : ""
@@ -170,7 +121,13 @@ function renderProject(project) {
     `;
 
     const thumbButton = workDiv.querySelector(".workThumbButton");
-    thumbButton?.addEventListener("click", () => {
+    const thumbnail = thumbButton?.querySelector(".workImg");
+    if (thumbnail) {
+      thumbButton.classList.add("is-image-loading");
+      FlowerSite.setImageLoadingState(thumbnail, thumbButton);
+    }
+
+    thumbButton?.addEventListener("click", (event) => {
       if (selectedWorkIndex === index) {
         clearSelectedWork();
       } else {
@@ -182,7 +139,6 @@ function renderProject(project) {
   });
 
   clearSelectedWork();
-  startWorksListCycle(worksList);
 }
 
 function getProjectGroups(projectData) {
@@ -307,64 +263,20 @@ function clearSelectedWork() {
     viewerImg.alt = "";
   }
 
-  startWorksListCycle(document.querySelector(".projectWorksList"));
+  const worksList = document.querySelector(".projectWorksList");
+  startWorksListCycle(worksList);
 }
 
 function startWorksListCycle(worksList) {
   stopWorksListCycle();
-
-  if (!worksList) {
-    return;
-  }
-
-  const works = [...worksList.querySelectorAll(".work")];
-  if (works.length < 2) return;
-
-  const beginCycle = () => {
-    const firstWork = works[0];
-    if (!firstWork) return;
-
-    const gap = Number.parseFloat(window.getComputedStyle(worksList).gap || "0") || 0;
-    const step = firstWork.getBoundingClientRect().width + gap;
-    const maxScroll = worksList.scrollWidth - worksList.clientWidth;
-
-    if (step <= 0 || maxScroll <= 0) return;
-
-    worksCycleTimer = setInterval(() => {
-      const nextScroll = worksList.scrollLeft + step;
-
-      if (nextScroll >= maxScroll - 1) {
-        worksList.scrollTo({ left: 0, behavior: "smooth" });
-        return;
-      }
-
-      worksList.scrollTo({ left: nextScroll, behavior: "smooth" });
-    }, 4000);
-  };
-
-  const images = [...worksList.querySelectorAll("img")];
-  if (!images.length || images.every((image) => image.complete)) {
-    requestAnimationFrame(beginCycle);
-    return;
-  }
-
-  let remaining = images.length;
-  const finishLoading = () => {
-    remaining -= 1;
-    if (remaining === 0) requestAnimationFrame(beginCycle);
-  };
-
-  images.forEach((image) => {
-    image.addEventListener("load", finishLoading, { once: true });
-    image.addEventListener("error", finishLoading, { once: true });
-  });
+  if (!worksList || worksList.children.length < 2) return;
+  worksCycleTimer = FlowerSite.cycleWorks(worksList,
+    [...worksList.querySelectorAll("img")].slice(0, 2));
 }
 
 function stopWorksListCycle() {
-  if (worksCycleTimer) {
-    clearInterval(worksCycleTimer);
-    worksCycleTimer = null;
-  }
+  worksCycleTimer?.destroy();
+  worksCycleTimer = null;
 }
 
 function updateSelectedThumbnail(selectedIndex) {
@@ -392,7 +304,7 @@ function updateRightPanel(work) {
   }
 
   if (textEls[2]) {
-    textEls[2].textContent = "";
+    textEls[2].replaceChildren();
   }
 }
 
@@ -415,7 +327,23 @@ function restoreProjectInfo() {
   }
 
   if (textEls[2]) {
-    textEls[2].textContent = baseProjectInfo.text3;
+    textEls[2].replaceChildren();
+
+    baseProjectInfo.creators.forEach((creator, index) => {
+      const creatorButton = document.createElement("button");
+      creatorButton.type = "button";
+      creatorButton.className = "projectCreatorButton";
+      creatorButton.textContent = creator;
+      creatorButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        selectCreatorWork(creator);
+      });
+
+      textEls[2].appendChild(creatorButton);
+      if (index < baseProjectInfo.creators.length - 1) {
+        textEls[2].append(" ");
+      }
+    });
   }
 }
 
@@ -430,8 +358,18 @@ function cacheBaseProjectInfo(project) {
     title: project.name || "",
     text1: project.description || "",
     text2: project.duration || "",
-    text3: creators.join(" "),
+    creators,
   };
+}
+
+function selectCreatorWork(creator) {
+  const workIndex = (currentProject?.works || []).findIndex(
+    (work) => work.creator?.trim() === creator
+  );
+
+  if (workIndex >= 0) {
+    selectWork(workIndex);
+  }
 }
 
 function normalizeImages(work) {
@@ -470,31 +408,43 @@ function updateFocusViewer(images, index) {
   const img = document.createElement("img");
   img.className = "focusViewerImg";
   img.id = "focusViewerImg";
-  img.src = buildImageUrl(images[index], "w1600");
   img.alt = currentProject?.works?.[selectedWorkIndex]?.title || "선택한 작품 이미지";
   img.loading = "eager";
+  img.decoding = "async";
+  img.src = buildImageUrl(images[index], "w1600");
+  inner.classList.add("is-image-loading");
+  FlowerSite.setImageLoadingState(img, inner);
 
   slide.appendChild(img);
   track.appendChild(slide);
   inner.appendChild(track);
+
+  const previousButton = document.createElement("button");
+  previousButton.className = "focusNav prev";
+  previousButton.type = "button";
+  previousButton.setAttribute("aria-label", "이전 이미지");
+
+  const nextButton = document.createElement("button");
+  nextButton.className = "focusNav next";
+  nextButton.type = "button";
+  nextButton.setAttribute("aria-label", "다음 이미지");
+
+  inner.append(previousButton, nextButton);
 }
 
 function startAutoSlide(images) {
   stopAutoSlide();
-
   if (!images || images.length <= 1) return;
-
-  slideTimer = setInterval(() => {
+  const viewer = document.getElementById("focusViewer");
+  slideTimer = FlowerSite.createAutoCycle(viewer, () => {
     selectedImageIndex = (selectedImageIndex + 1) % images.length;
     updateFocusViewer(images, selectedImageIndex);
-  }, 4000);
+  }, [...viewer.querySelectorAll("img")]);
 }
 
 function stopAutoSlide() {
-  if (slideTimer) {
-    clearInterval(slideTimer);
-    slideTimer = null;
-  }
+  slideTimer?.destroy();
+  slideTimer = null;
 }
 
 function showPrevImage() {
