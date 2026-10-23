@@ -445,6 +445,46 @@ section {
   box-sizing: border-box;
 }
 
+.is-image-loading {
+  background-color: #f2f2f2;
+  animation: image-placeholder-pulse 1.2s ease-in-out infinite;
+}
+
+.is-image-loading img {
+  opacity: 0;
+}
+
+img.is-image-loaded {
+  opacity: 1;
+  transition: opacity 220ms ease;
+}
+
+.is-image-error {
+  background-color: #f2f2f2;
+  animation: none;
+}
+
+@keyframes image-placeholder-pulse {
+  0%,
+  100% {
+    background-color: #f2f2f2;
+  }
+
+  50% {
+    background-color: #eaeaea;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-image-loading {
+    animation: none;
+  }
+
+  img.is-image-loaded {
+    transition: none;
+  }
+}
+
 .projectPreviewWorks {
   list-style: none;
   margin: 0;
@@ -679,6 +719,8 @@ body.work-selected .projectDetail .focusViewer {
 }
 
 .flowerNightDepth > .img {
+  width: auto;
+  height: auto;
   max-width: calc(50vw - 3.6rem);
   max-height: calc(100vh - 18.4rem);
   object-fit: contain;
@@ -890,6 +932,42 @@ body.work-selected .projectDetail .focusViewer {
 
 .border {
   border: 1px solid;
+}
+
+/* 직접 방문이나 느린 연결에서도 제목·이미지 영역을 먼저 확보합니다. */
+.detailImagePlaceholder {
+  display: none;
+}
+
+.detail-loading .detailImagePlaceholder {
+  display: block;
+  width: calc(50vw - 3.6rem);
+  height: min(60rem, calc(100dvh - 18.4rem));
+  background: #f2f2f2;
+  flex-shrink: 0;
+}
+
+.detail-loading .flowerNightExplanation h2 {
+  min-height: 1.5em;
+}
+
+.detail-loading .flowerNightText {
+  min-height: 18rem;
+}
+
+.detail-loading .flowerNightText p:empty::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 2em;
+  background: #f2f2f2;
+}
+
+.detail-loading .projectWorksList::before {
+  content: "";
+  width: 100%;
+  height: var(--project-work-min-height);
+  background: #f2f2f2;
 }
 
 

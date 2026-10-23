@@ -1,0 +1,195 @@
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
+const vm = require("node:vm");
+const root = path.resolve(__dirname, "..");
+const source = (file) => fs.readFileSync(path.join(root, file), "utf8");
+
+function browser() {
+  const timers = new Map();
+  const frames = new Map();
+  let nextId = 1;
+  const storage = new Map();
+  const selectors = new Map();
+  const restored = [];
+  const document = new EventTarget();
+  const window = new EventTarget();
+  const motion = new EventTarget();
+  motion.matches = false;
+  document.hidden = false;
+  document.activeElement = null;
+  const makeElement = () => {
+    const element = new EventTarget();
+    const classes = new Set();
+    Object.assign(element, {
+      dataset: {}, style: {}, attributes: {}, scrollLeft: 0, scrollTop: 0,
+      classList: {
+        add: (...names) => names.forEach((name) => classes.add(name)),
+        remove: (...names) => names.forEach((name) => classes.delete(name)),
+        contains: (name) => classes.has(name),
+        toggle(name, force) {
+          const add = force === undefined ? !classes.has(name) : force;
+          if (add) classes.add(name); else classes.delete(name);
+        },
+      },
+      matches: () => Boolean(element.hover),
+      contains: (target) => target === element || Boolean(element.descendants?.includes(target)),
+      querySelector: () => null,
+      querySelectorAll: () => [],
+      setAttribute(name, value) { element.attributes[name] = value; },
+      replaceChildren() {}, appendChild() {}, append() {},
+      focus() { document.activeElement = element; },
+      scrollTo(position) { element.scrollLeft = position.left; element.scrollTop = position.top; },
+    });
+    return element;
+  };
+  document.body = makeElement();
+  document.querySelector = (selector) => selectors.get(selector) || null;
+  document.querySelectorAll = (selector) => selectors.get(selector) || [];
+  document.getElementById = (id) => selectors.get(`#${id}`) || null;
+  document.createElement = makeElement;
+  window.matchMedia = () => motion;
+  Object.assign(window, { scrollX: 0, scrollY: 0, innerHeight: 900,
+    scrollTo(position) { restored.push(position); },
+  });
+  const location = { pathname: "/archive/", search: "", hash: "", origin: "https://example.test",
+    href: "https://example.test/archive/" };
+  window.location = location;
+  const history = { state: null, length: 2,
+    replaceState(state) { this.state = state; },
+    back() { this.wentBack = true; },
+  };
+  const context = vm.createContext({
+    window, document, location, history, URL, URLSearchParams, Date, Event, queueMicrotask,
+    console: { error() {} },
+    getComputedStyle: () => ({ gap: "24", scrollPaddingLeft: "0" }),
+    sessionStorage: {
+      setItem: (key, value) => storage.set(key, value),
+      getItem: (key) => storage.get(key) ?? null,
+      removeItem: (key) => storage.delete(key),
+    },
+    setTimeout(fn, delay) { const id = nextId++; timers.set(id, { fn, delay, repeat: false }); return id; },
+    clearTimeout(id) { timers.delete(id); },
+    setInterval(fn, delay) { const id = nextId++; timers.set(id, { fn, delay, repeat: true }); return id; },
+    clearInterval(id) { timers.delete(id); },
+    requestAnimationFrame(fn) { const id = nextId++; frames.set(id, fn); return id; },
+    cancelAnimationFrame(id) { frames.delete(id); },
+    fetch: async () => { throw new Error("unexpected network request"); },
+  });
+  vm.runInContext(source("site-utils.js"), context);
+  context.FlowerSite = window.FlowerSite;
+  const flushFrames = () => {
+    const pending = [...frames.values()]; frames.clear(); pending.forEach((fn) => fn());
+  };
+  const fireTimeouts = (delay) => {
+    for (const [id, timer] of [...timers]) {
+      if (!timer.repeat && timer.delay === delay) { timers.delete(id); timer.fn(); }
+    }
+  };
+  return { context, document, window, motion, location, history, storage, selectors, restored,
+    makeElement, flushFrames, fireTimeouts, timers, utils: window.FlowerSite,
+    intervalCount: () => [...timers.values()].filter((timer) => timer.repeat).length };
+}
+
+test("shared data expires, is consumed once, and tolerates blocked or corrupt storage", () => {
+  const env = browser();
+  env.utils.saveData("handoff", { id: "flower-night-8" });
+  assert.equal(env.utils.readData("handoff", 30000, true).id, "flower-night-8");
+  assert.equal(env.utils.readData("handoff"), null);
+  env.storage.set("flower:old", JSON.stringify({ savedAt: Date.now() - 31000, value: 1 }));
+  assert.equal(env.utils.readData("old"), null);
+  env.storage.set("flower:broken", "{broken");
+  assert.equal(env.utils.readData("broken"), null);
+  env.context.sessionStorage.setItem = () => { throw new Error("blocked"); };
+  env.context.sessionStorage.getItem = () => { throw new Error("blocked"); };
+  assert.doesNotThrow(() => env.utils.saveData("key", 1));
+  assert.equal(env.utils.readData("key"), null);
+});
+
+test("all exhibition handoffs fill the right panel synchronously without fetching", () => {
+  const data = JSON.parse(source("assets/json/exhibitions.json"));
+  for (const item of data.exhibitions) {
+    const env = browser();
+    const image = Object.assign(env.makeElement(), { hidden: true, complete: true, naturalWidth: 600 });
+    const title = env.makeElement();
+    const text = env.makeElement();
+    Object.assign(env.location, { pathname: "/news/exhibition.html", search: `?id=${item.id}`,
+      href: `https://example.test/news/exhibition.html?id=${item.id}` });
+    env.selectors.set(".flowerNight img", image);
+    env.selectors.set(".flowerNight h2", title);
+    env.selectors.set(".flowerNightText", text);
+    env.utils.saveData("exhibition-handoff", { exhibition: item });
+    vm.runInContext(source("news/exhibition.js"), env.context);
+    assert.equal(title.textContent, item.title);
+    assert.ok(text.innerHTML.includes(item.duration));
+    assert.equal(image.src, new URL(item.image, env.location.href).href);
+    assert.equal(image.hidden, false);
+    assert.equal(env.document.body.classList.contains("detail-loading"), false);
+  }
+});
+
+test("exhibition reload reuses cached data, and a failed request releases the loading state", async () => {
+  const env = browser();
+  const data = JSON.parse(source("assets/json/exhibitions.json"));
+  const item = data.exhibitions.at(-1);
+  Object.assign(env.location, { search: `?id=${item.id}`, href: "https://example.test/news/exhibition.html" });
+  const image = Object.assign(env.makeElement(), { complete: true, naturalWidth: 100 });
+  const title = env.makeElement();
+  env.selectors.set(".flowerNight img", image);
+  env.selectors.set(".flowerNight h2", title);
+  env.utils.saveData("exhibitions", data);
+  env.document.body.classList.add("detail-loading");
+  vm.runInContext(source("news/exhibition.js"), env.context);
+  assert.equal(title.textContent, item.title);
+  env.flushFrames();
+  assert.equal(env.document.body.classList.contains("detail-loading"), false);
+  env.storage.clear();
+  env.document.body.classList.add("detail-loading");
+  env.context.fetch = async () => ({ ok: false, status: 503 });
+  await vm.runInContext("initializeExhibition()", env.context);
+  assert.equal(title.textContent, "전시 정보를 불러오지 못했습니다.");
+  assert.equal(env.document.body.classList.contains("detail-loading"), false);
+  assert.equal(env.document.body.classList.contains("detail-error"), true);
+});
+
+test("cold exhibition entry keeps the placeholder until the image is ready", async () => {
+  const env = browser();
+  const data = JSON.parse(source("assets/json/exhibitions.json"));
+  Object.assign(env.location, { search: `?id=${data.exhibitions[0].id}`,
+    href: "https://example.test/news/exhibition.html" });
+  const image = Object.assign(env.makeElement(), { complete: false, naturalWidth: 0 });
+  env.selectors.set(".flowerNight img", image);
+  env.selectors.set(".flowerNight h2", env.makeElement());
+  env.document.body.classList.add("detail-loading");
+  env.context.fetch = async () => ({ ok: true, json: async () => data });
+  vm.runInContext(source("news/exhibition.js"), env.context);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(env.document.body.classList.contains("detail-loading"), true);
+  assert.equal(image.hidden, true);
+  image.naturalWidth = 600;
+  image.dispatchEvent(new Event("load"));
+  env.flushFrames();
+  assert.equal(env.document.body.classList.contains("detail-loading"), false);
+  assert.equal(image.hidden, false);
+});
+
+test("project handoff and reload fill project text before any asynchronous fetch", () => {
+  const data = JSON.parse(source("assets/json/project.json"));
+  const project = Object.values(data).filter(Array.isArray).flat()[0];
+  for (const reload of [false, true]) {
+    const env = browser();
+    env.location.search = `?id=${project.id}`;
+    const title = env.makeElement();
+    const paragraphs = [env.makeElement(), env.makeElement(), env.makeElement()];
+    env.selectors.set(".flowerNightExplanation h2", title);
+    env.selectors.set(".flowerNightText p", paragraphs);
+    env.document.body.classList.add("detail-loading");
+    if (reload) env.utils.saveData("projects", data);
+    else env.utils.saveData("project-handoff", { projectId: project.id, data });
+    vm.runInContext(source("archive/project.js"), env.context);
+    assert.equal(title.textContent, project.name);
+    assert.equal(paragraphs[0].textContent, project.description);
+    assert.equal(env.document.body.classList.contains("detail-loading"), false);
+  }
+});

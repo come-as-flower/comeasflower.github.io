@@ -62,7 +62,7 @@ let slideTimer = null;
 let worksCycleTimer = null;
 let baseProjectInfo = null;
 
-document.addEventListener("DOMContentLoaded", async () => {
+async function initializeProject() {
   const params = new URLSearchParams(window.location.search);
   const projectId = params.get("id");
 
@@ -74,8 +74,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindViewerControls();
 
   try {
-    const response = await fetch("../assets/json/project.json");
-    const jsonData = await response.json();
+    const handoff = FlowerSite.readData("project-handoff", 30000, true);
+    let jsonData = handoff?.projectId === projectId ? handoff.data : null;
+    if (!jsonData) jsonData = FlowerSite.readData("projects", 300000);
+    if (!jsonData) {
+      jsonData = await FlowerSite.fetchJSON("../assets/json/project.json");
+      FlowerSite.saveData("projects", jsonData);
+    }
 
     const projectResult = findProjectById(jsonData, projectId);
 
@@ -85,16 +90,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const project = projectResult.project;
+    document.title = `꽃: 모아보기 - ${project.name || "프로젝트"}`;
 
     currentProject = project;
     cacheBaseProjectInfo(project);
     renderProjectTagMenu(getAllProjectTags(jsonData));
     renderProject(project);
+    FlowerSite.finishDetailLoading();
   } catch (error) {
     console.error("프로젝트 데이터를 불러오는 중 오류 발생:", error);
     renderError("프로젝트 데이터를 불러오지 못했습니다.");
   }
-});
+}
+
+// head의 defer 스크립트이므로 DOM이 준비된 상태에서 첫 표시 전에 그립니다.
+initializeProject();
 
 function bindViewerControls() {
   const prevButton = document.querySelector(".focusNav.prev");
@@ -529,6 +539,7 @@ function buildImageUrl(value, size = "w1600") {
 }
 
 function renderError(message) {
+  FlowerSite.finishDetailLoading(true);
   const titleEl = document.querySelector(".flowerNightExplanation h2");
   const textEls = document.querySelectorAll(".flowerNightText p");
   const worksList = document.querySelector(".worksList");
