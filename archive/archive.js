@@ -6,7 +6,7 @@ let selectedArchiveProjectId = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    const projectData = await FlowerSite.fetchJSON(PROJECT_JSON_URL);
+    const projectData = await (window.FlowerContent ? FlowerContent.fetchProjects() : FlowerSite.fetchJSON(PROJECT_JSON_URL));
     FlowerSite.saveData("projects", projectData);
     archiveProjectData = projectData;
     const allProjects = flattenProjects(projectData);
@@ -191,8 +191,8 @@ function createProjectListItem(project) {
   button.className = "archiveProjectButton";
   button.dataset.projectId = project.id;
   button.innerHTML = `
-    <span class="archiveProjectName">${project.name || "제목 없음"}</span>
-    <span class="archiveProjectMeta">${project.output || project.duration || "프로젝트"}</span>
+    <span class="archiveProjectName">${FlowerSite.escapeHtml(project.name || "제목 없음")}</span>
+    <span class="archiveProjectMeta">${FlowerSite.escapeHtml(project.output || project.duration || "프로젝트")}</span>
   `;
 
   button.addEventListener("pointerenter", () => {

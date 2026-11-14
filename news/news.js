@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!list) return;
 
   try {
-    const data = await FlowerSite.fetchJSON("../assets/json/exhibitions.json");
+    const data = await (window.FlowerContent ? FlowerContent.fetchExhibitions() : FlowerSite.fetchJSON("../assets/json/exhibitions.json"));
     FlowerSite.saveData("exhibitions", data);
 
     const exhibitions = Array.isArray(data.exhibitions) ? data.exhibitions : [];
@@ -30,9 +30,13 @@ function renderExhibitions(container, exhibitions) {
     card.className = "work";
     card.href = `./exhibition.html?id=${encodeURIComponent(item.id)}`;
 
-    card.innerHTML = `
-      ${item.image ? `<img class="workImg border" src="${item.image}" alt="${item.title || "전시 이미지"}">` : ""}
-    `;
+    if (item.image) {
+      const img = document.createElement("img");
+      img.className = "workImg border";
+      img.src = item.image;
+      img.alt = item.title || "전시 이미지";
+      card.appendChild(img);
+    }
 
     card.addEventListener("click", async (event) => {
       const image = card.querySelector("img");

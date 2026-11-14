@@ -5,8 +5,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!activeContainer || !pastContainer) return;
 
   try {
-    const response = await fetch("../assets/json/members.json");
-    const data = await response.json();
+    const data = await (window.FlowerContent ? FlowerContent.fetchMembers() : FlowerSite.fetchJSON("../assets/json/members.json"));
 
     const activeMembers = isPlainObject(data.active) ? data.active : {};
     const pastMembers = isPlainObject(data.past) ? data.past : {};

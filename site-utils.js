@@ -246,7 +246,27 @@ window.FlowerSite = (() => {
     restorePageState();
   }
 
-  return { motion, saveData, readData, fetchJSON, onImagesReady, setImageLoadingState,
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    })[c]);
+  }
+
+  // 기존 JSON의 <br>와 안전한 <a> 서식만 제한적으로 허용합니다.
+  function safeRichText(value) {
+    const links = [];
+    const marked = String(value ?? "").replace(/<a\s+href=["']([^"']+)["']>([\s\S]*?)<\/a>/gi, (_all, href, label) => {
+      if (!/^(https:\/\/|mailto:)/i.test(href)) return label;
+      const token = `FLOWERSAFELINK${links.length}TOKEN`;
+      links.push(`<a href="${escapeHtml(href)}" rel="noopener noreferrer">${escapeHtml(label)}</a>`);
+      return token;
+    });
+    return escapeHtml(marked).replace(/&lt;br\s*\/?&gt;/gi, "<br>")
+      .replace(/\r?\n/g, "<br>")
+      .replace(/FLOWERSAFELINK(\d+)TOKEN/g, (_all, index) => links[Number(index)] || "");
+  }
+
+  return { motion, saveData, readData, fetchJSON, escapeHtml, safeRichText, onImagesReady, setImageLoadingState,
     createAutoCycle, cycleWorks, setupHorizontalScroll, savePageState, readPageState,
     restorePageState, finishDetailLoading };
 })();

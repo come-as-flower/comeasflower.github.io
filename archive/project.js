@@ -20,9 +20,9 @@ async function initializeProject() {
   try {
     const handoff = FlowerSite.readData("project-handoff", 30000, true);
     let jsonData = handoff?.projectId === projectId ? handoff.data : null;
-    if (!jsonData) jsonData = FlowerSite.readData("projects", 300000);
+    if (!jsonData && !window.FlowerContent?.enabled) jsonData = FlowerSite.readData("projects", 300000);
     if (!jsonData) {
-      jsonData = await FlowerSite.fetchJSON("../assets/json/project.json");
+      jsonData = await (window.FlowerContent ? FlowerContent.fetchProjects() : FlowerSite.fetchJSON("../assets/json/project.json"));
       FlowerSite.saveData("projects", jsonData);
     }
 
@@ -303,7 +303,7 @@ function updateRightPanel(work) {
   }
 
   if (textEls[0]) {
-    textEls[0].innerHTML = work.description || "";
+    textEls[0].innerHTML = FlowerSite.safeRichText(work.description || "");
   }
 
   if (textEls[1]) {

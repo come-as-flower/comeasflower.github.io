@@ -14,9 +14,9 @@ async function initializeExhibition() {
       return;
     }
 
-    let data = FlowerSite.readData("exhibitions", 300000);
+    let data = window.FlowerContent?.enabled ? null : FlowerSite.readData("exhibitions", 300000);
     if (!data) {
-      data = await FlowerSite.fetchJSON("../assets/json/exhibitions.json");
+      data = await (window.FlowerContent ? FlowerContent.fetchExhibitions() : FlowerSite.fetchJSON("../assets/json/exhibitions.json"));
       FlowerSite.saveData("exhibitions", data);
     }
 
@@ -63,6 +63,24 @@ function renderExhibition(item, cachedImage = null) {
     imageEl.hidden = false;
   }
 
+  const gallery = document.querySelector('.exhibitionGallery');
+  if (gallery) {
+    gallery.replaceChildren();
+    const images = Array.isArray(item.images) ? item.images : [];
+    for (const entry of images) {
+      const src = typeof entry === 'string' ? entry : entry?.url;
+      if (!src) continue;
+      const picture = document.createElement('img');
+      picture.className = 'exhibitionGalleryImage border';
+      picture.loading = 'lazy';
+      picture.decoding = 'async';
+      picture.src = new URL(src, window.location.href).href;
+      picture.alt = (typeof entry === 'object' && entry.alt) || `${item.title || '전시'} 상세 이미지`;
+      gallery.appendChild(picture);
+    }
+    gallery.hidden = gallery.childElementCount === 0;
+  }
+
   if (titleEl) {
     titleEl.textContent = item.title || "";
   }
@@ -74,12 +92,12 @@ function renderExhibition(item, cachedImage = null) {
     const descriptions = Array.isArray(item.description) ? item.description : [];
 
     const participantLines = chunkArray(participants, 2)
-      .map((group) => `${group.join(" ")}<br>`)
+      .map((group) => `${FlowerSite.escapeHtml(group.join(" "))}<br>`)
       .join("");
 
     textContainer.innerHTML = `
-      ${descriptions.map((text) => `<p>${text}</p>`).join("")}
-      <p>기간: ${item.duration || ""}<br>장소: ${item.place || ""}</p>
+      ${descriptions.map((text) => `<p>${FlowerSite.safeRichText(text)}</p>`).join("")}
+      <p>기간: ${FlowerSite.escapeHtml(item.duration || "")}<br>장소: ${FlowerSite.escapeHtml(item.place || "")}</p>
       <p>${participantLines}</p>
     `;
   }
