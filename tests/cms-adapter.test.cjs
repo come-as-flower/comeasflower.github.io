@@ -50,6 +50,11 @@ test('Supabase 프로젝트/작품/이미지를 기존 사이트 데이터 모�
  assert.equal(calls.length,10);
  assert.equal(calls[0].options.headers.apikey,'sb_publishable_example');
  assert.equal(calls[0].options.headers.Authorization,undefined);
+ const relationCalls=calls.filter(call=>/\/(project_members|work_members|exhibition_members)\?/.test(call.url));
+ assert.equal(relationCalls.length,3);
+ assert.ok(relationCalls.every(call=>!call.url.includes('order=sort_order.asc')));
+ const sortableCalls=calls.filter(call=>/\/(projects|works|work_images|members|exhibitions|exhibition_images)\?/.test(call.url));
+ assert.ok(sortableCalls.every(call=>call.url.includes('order=sort_order.asc')));
 });
 test('외부 이미지 URL은 HTTPS만 허용하고 Supabase 경로는 인코딩',()=>{
  const {api}=harness({url:'https://sample.supabase.co',anonKey:'sb_publishable_example',bucket:'flower-media'},{});

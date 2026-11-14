@@ -6,11 +6,12 @@ window.FlowerContent = (() => {
   const base = (conf.url || '').replace(/\/$/, '');
   const safeImagePath = (value) => encodeURIComponent(value).replaceAll('%2F', '/');
 
-  async function list(table) {
+  async function list(table, ordered = true) {
     const all = [];
     const pageSize = 1000;
     for (let offset = 0; ; offset += pageSize) {
-      const url = `${base}/rest/v1/${table}?select=*&order=sort_order.asc&offset=${offset}&limit=${pageSize}`;
+      const order = ordered ? '&order=sort_order.asc' : '';
+      const url = `${base}/rest/v1/${table}?select=*${order}&offset=${offset}&limit=${pageSize}`;
       // 새로운 sb_publishable 키는 JWT가 아니므로 Authorization Bearer에 넣지 않습니다.
       const headers = { apikey: conf.anonKey };
       if (conf.anonKey.split('.').length === 3) headers.Authorization = `Bearer ${conf.anonKey}`;
@@ -36,7 +37,7 @@ window.FlowerContent = (() => {
   async function fetchProjects() {
     if (!enabled) return FlowerSite.fetchJSON('../assets/json/project.json');
     const [projects, works, images, projectMembers, workMembers, members] = await Promise.all([
-      list('projects'),list('works'),list('work_images'),list('project_members'),list('work_members'),list('members')
+      list('projects'),list('works'),list('work_images'),list('project_members',false),list('work_members',false),list('members')
     ]);
     const memberName = new Map(members.map(member=>[member.id,member.name]));
     const namesByWork = new Map();
@@ -77,7 +78,7 @@ window.FlowerContent = (() => {
   async function fetchExhibitions() {
     if (!enabled) return FlowerSite.fetchJSON('../assets/json/exhibitions.json');
     const [rows, images, exhibitionMembers, members] = await Promise.all([
-      list('exhibitions'), list('exhibition_images'), list('exhibition_members'), list('members')
+      list('exhibitions'), list('exhibition_images'), list('exhibition_members',false), list('members')
     ]);
     const memberName = new Map(members.map(member=>[member.id,member.name]));
     const namesByExhibition = new Map();
