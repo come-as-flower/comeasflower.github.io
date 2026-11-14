@@ -14,10 +14,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     detailContainer.innerHTML = `
       <div class="notice-contents">
         <div class="notice-contents-inner">
-          <h2>${item.title}</h2>
-          ${item.contents.map((paragraph) => `<p>${paragraph}</p>`).join("")}
+          <h2>${FlowerSite.escapeHtml(item.title)}</h2>
+          ${item.contents.map((paragraph) => `<p>${FlowerSite.safeRichText(paragraph)}</p>`).join("")}
         </div>
-        <p class="notice-date-right">${item.date}</p>
+        <p class="notice-date-right">${FlowerSite.escapeHtml(item.date)}</p>
       </div>
     `;
   }
@@ -71,8 +71,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       noticeItem.className = "notice-item";
       noticeItem.innerHTML = `
         <div class="notice-exp">
-          <h3 class="notice-title">${item.title}</h3>
-          <p class="notice-date">${item.date}</p>
+          <h3 class="notice-title">${FlowerSite.escapeHtml(item.title)}</h3>
+          <p class="notice-date">${FlowerSite.escapeHtml(item.date)}</p>
         </div>
       `;
 
@@ -112,8 +112,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   try {
-    const response = await fetch("../assets/json/allim.json");
-    const data = await response.json();
+    const data = await (window.FlowerContent ? FlowerContent.fetchNotices() : FlowerSite.fetchJSON("../assets/json/allim.json"));
 
     notices = Array.isArray(data) ? data : [];
     renderList(notices);

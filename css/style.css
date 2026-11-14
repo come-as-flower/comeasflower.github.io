@@ -1113,3 +1113,17 @@ body.work-selected .projectDetail > .projectWorksList {
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
 }
+
+/* 전시 상세 이미지: 공개 사이트의 흑백 타이포그래피/간격 규칙 재사용 */
+.exhibitionGallery[hidden] { display: none; }
+.exhibitionGallery {
+  margin-top: 8rem;
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 2.4rem;
+  align-items: start;
+}
+.exhibitionGalleryImage { display: block; width: 100%; height: auto; object-fit: contain; }
+@media (max-width: 800px) {
+  .exhibitionGallery { margin-top: 5rem; grid-template-columns: 1fr; gap: 1.8rem; }
+}
