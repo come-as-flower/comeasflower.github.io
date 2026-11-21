@@ -665,7 +665,11 @@ img.is-image-loaded {
   z-index: 1;
 }
 
-body.work-selected .projectDetail .focusViewer {
+.workHeadingCreator {
+  display: none;
+}
+
+body.work-selected .projectDetail .focusViewer:not([hidden]) {
   display: flex;
   justify-content: end;
   right: calc(50vw + 2.4rem);
