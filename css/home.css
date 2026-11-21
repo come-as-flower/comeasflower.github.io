@@ -92,6 +92,16 @@ a:focus-visible {
   justify-content: center;
 }
 
+.innerText a > span {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.innerText a > span img {
+  display: block;
+}
+
 .about{
   background-color: #f8f8f8;
   position: absolute;

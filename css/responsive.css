@@ -131,9 +131,31 @@
         display: none;
     }
 
+    .archiveBody {
+        display: flex;
+        flex-direction: column;
+        height: 100dvh;
+        margin: 0;
+    }
+
+    .archiveBody > header {
+        position: relative;
+        flex: none;
+    }
+
+    .archiveBody .listMenu {
+        display: flex;
+    }
+
+    .archiveLayout {
+        margin: 0;
+        flex: 1;
+        min-height: 0;
+    }
+
     .archivePage {
         display: block;
-        height: calc(100vh - 14rem);
+        height: 100%;
     }
 
     .archiveSidebar {
@@ -407,6 +429,45 @@
 
     .projectDetail .flowerNightText {
         gap: 2.4rem;
+    }
+
+    body.work-selected .projectDetail .focusViewer:not([hidden]) {
+        position: static;
+        display: block;
+        width: 100%;
+        max-width: none;
+        height: auto;
+        margin-bottom: 1.8rem;
+    }
+
+    .projectDetail .focusViewerInner,
+    .projectDetail .focusViewerTrack,
+    .projectDetail .focusViewerSlide,
+    .projectDetail .focusViewerImg {
+        width: 100%;
+    }
+
+    .projectDetail .focusViewerImg {
+        max-width: 100%;
+        max-height: none;
+    }
+
+    .work-selected .flowerNightExplanation {
+        gap: 1.2rem;
+    }
+
+    .work-selected .projectDetail .flowerNightExplanation h2 {
+        border: 0;
+        padding: 0;
+    }
+
+    .workHeadingCreator {
+        display: inline;
+    }
+
+    .work-selected .workCreatorLine,
+    .work-selected .flowerNightText p:empty {
+        display: none;
     }
 
     .projectDetail > .projectWorksList {

@@ -3,25 +3,54 @@ let archiveProjects = [];
 let archiveProjectData = null;
 let imageCycleTimer = null;
 let selectedArchiveProjectId = null;
+const desktopPreview = window.matchMedia("(min-width: 1201px)");
 
 document.addEventListener("DOMContentLoaded", async () => {
+  const filters = [...document.querySelectorAll(".listMenu a")];
+  const readTag = () => filters.find(link => link.hash === location.hash)?.textContent || "전체";
+
+  function showCategory(savedId) {
+    const tag = readTag();
+    for (const link of filters) {
+      const active = link.textContent === tag;
+      link.parentElement.classList.toggle("selected", active);
+      if (active) link.setAttribute("aria-current", "true");
+      else link.removeAttribute("aria-current");
+    }
+    if (!archiveProjectData) return;
+
+    const projects = tag === "전체" ? archiveProjects
+      : archiveProjects.filter(project => getProjectTags(project).includes(tag));
+    renderArchive(projects);
+    const first = projects.find(project => savedId && project.id === savedId) || projects[0];
+    if (desktopPreview.matches && first) {
+      selectProject(first.id);
+    } else {
+      clearImageCycle();
+      selectedArchiveProjectId = null;
+      delete document.querySelector(".archiveProjectList").dataset.selectedProjectId;
+      const preview = document.querySelector(".projectPreview");
+      delete preview.dataset.initialized;
+      preview.textContent = projects.length ? "" : "이 카테고리에 등록된 프로젝트가 없습니다.";
+    }
+  }
+
+  for (const link of filters) {
+    link.addEventListener("click", event => {
+      event.preventDefault();
+      history.replaceState(null, "", link.hash);
+      showCategory();
+    });
+  }
+  showCategory();
   try {
     const projectData = await (window.FlowerContent ? FlowerContent.fetchProjects() : FlowerSite.fetchJSON(PROJECT_JSON_URL));
     FlowerSite.saveData("projects", projectData);
     archiveProjectData = projectData;
-    const allProjects = flattenProjects(projectData);
-
-    archiveProjects = allProjects;
-    const activeTag = getArchiveTagFromHash();
-    const visibleProjects = activeTag === "전체"
-      ? allProjects
-      : allProjects.filter((project) => getProjectTags(project).includes(activeTag));
-
-    renderArchive(visibleProjects, activeTag);
-    ensurePreviewShell();
-    const savedId = FlowerSite.readPageState()?.selectedProjectId;
-    selectProject(visibleProjects.some((project) => project.id === savedId)
-      ? savedId : visibleProjects[0]?.id || "");
+    archiveProjects = flattenProjects(projectData);
+    showCategory(FlowerSite.readPageState()?.selectedProjectId);
+    desktopPreview.addEventListener("change", () => showCategory());
+    window.addEventListener("hashchange", () => showCategory());
     FlowerSite.restorePageState();
   } catch (error) {
     console.error("모아보기 데이터를 불러오는 중 오류 발생:", error);
@@ -70,36 +99,8 @@ function flattenProjects(projectData) {
     });
 }
 
-function renderArchive(projects, activeTag = "전체") {
-  const menu = document.querySelector(".listMenu");
+function renderArchive(projects) {
   const list = document.querySelector(".archiveProjectList");
-
-  if (menu) {
-    menu.innerHTML = "";
-
-    const tags = [
-      "전체",
-      ...new Set(archiveProjects.flatMap((project) => getProjectTags(project))),
-    ];
-
-    tags.forEach((tag) => {
-      const item = document.createElement("li");
-      item.className = "radioButton";
-      if (tag === activeTag) item.classList.add("selected");
-
-      const link = document.createElement("a");
-      link.href = tag === "전체" ? "#all" : `#${encodeURIComponent(tag)}`;
-      link.textContent = tag;
-
-      link.addEventListener("click", (event) => {
-        event.preventDefault();
-        filterArchiveByTag(tag);
-      });
-
-      item.appendChild(link);
-      menu.appendChild(item);
-    });
-  }
 
   if (!list) return;
 
@@ -123,39 +124,6 @@ function getProjectTags(project) {
     .split(",")
     .map((tag) => tag.trim())
     .filter(Boolean);
-}
-
-function filterArchiveByTag(tag) {
-  const filteredProjects = tag === "전체"
-    ? archiveProjects
-    : archiveProjects.filter((project) => getProjectTags(project).includes(tag));
-
-  const hash = tag === "전체" ? "#all" : `#${encodeURIComponent(tag)}`;
-  history.replaceState(null, "", `${window.location.pathname}${hash}`);
-
-  renderArchive(filteredProjects, tag);
-
-  if (filteredProjects.length > 0) {
-    selectProject(filteredProjects[0].id);
-  } else {
-    clearImageCycle();
-  }
-}
-
-function getArchiveTagFromHash() {
-  const rawHash = window.location.hash.slice(1);
-  if (!rawHash || rawHash === "all") return "전체";
-
-  let tag = rawHash;
-  try {
-    tag = decodeURIComponent(rawHash);
-  } catch (error) {
-    return "전체";
-  }
-
-  return archiveProjects.some((project) => getProjectTags(project).includes(tag))
-    ? tag
-    : "전체";
 }
 
 function ensurePreviewShell() {
@@ -212,7 +180,7 @@ function createProjectListItem(project) {
 }
 
 function selectProject(projectId) {
-  if (!projectId) return;
+  if (!desktopPreview.matches || !projectId) return;
 
   const project = archiveProjects.find((item) => item.id === projectId);
   if (!project) return;

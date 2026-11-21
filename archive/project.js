@@ -239,6 +239,9 @@ function selectWork(index, focusViewer = false) {
   updateRightPanel(work);
   updateFocusViewer(images, selectedImageIndex);
   startAutoSlide(images);
+  if (window.matchMedia("(max-width: 1200px)").matches) {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
   if (focusViewer) document.querySelector(".focusNav.next")?.focus({ preventScroll: true });
 }
 
@@ -300,6 +303,12 @@ function updateRightPanel(work) {
 
   if (titleEl) {
     titleEl.textContent = work.title || work.creator || currentProject?.name || "";
+    if (work.title && work.creator) {
+      const byline = document.createElement("span");
+      byline.className = "workHeadingCreator";
+      byline.textContent = `, ${work.creator}`;
+      titleEl.append(byline);
+    }
   }
 
   if (textEls[0]) {
