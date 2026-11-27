@@ -432,13 +432,10 @@ function updateFocusViewer(images, index) {
   img.src = buildImageUrl(images[index], "w1600");
   FlowerSite.setImageLoadingState(img, slide);
 
-  const loadingMessage = document.createElement("span");
-  loadingMessage.className = "focusLoadingMessage";
-  loadingMessage.textContent = "이미지를 불러오는 중…";
   const errorMessage = document.createElement("span");
   errorMessage.className = "focusErrorMessage";
   errorMessage.textContent = "이미지를 불러오지 못했습니다.";
-  slide.append(img, loadingMessage, errorMessage);
+  slide.append(img, errorMessage);
   track.appendChild(slide);
   inner.appendChild(track);
 

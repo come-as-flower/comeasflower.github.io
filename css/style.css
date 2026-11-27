@@ -738,12 +738,10 @@ body.work-selected .projectDetail .focusViewer:not([hidden]) {
 }
 
 .focusViewerSlide:is(.is-image-loading, .is-image-error) img,
-.focusLoadingMessage,
 .focusErrorMessage {
   display: none;
 }
 
-.is-image-loading > .focusLoadingMessage,
 .is-image-error > .focusErrorMessage {
   display: block;
   color: #555;
