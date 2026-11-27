@@ -470,10 +470,8 @@ function startAutoSlide(images) {
   stopAutoSlide();
   if (!images || images.length <= 1) return;
   const viewer = document.getElementById("focusViewer");
-  slideTimer = FlowerSite.createAutoCycle(viewer, () => {
-    selectedImageIndex = (selectedImageIndex + 1) % images.length;
-    updateFocusViewer(images, selectedImageIndex);
-  }, [...viewer.querySelectorAll("img")]);
+  slideTimer = FlowerSite.createAutoCycle(viewer, showNextImage,
+    [...viewer.querySelectorAll("img")], 4000, undefined, { pauseOnHoverOrFocus: false });
 }
 
 function stopAutoSlide() {
