@@ -312,11 +312,11 @@ function updateRightPanel(work) {
   }
 
   if (textEls[0]) {
-    textEls[0].innerHTML = FlowerSite.safeRichText(work.description || "");
+    textEls[0].textContent = work.title && work.creator ? work.creator : "";
   }
 
   if (textEls[1]) {
-    textEls[1].textContent = work.creator ? work.creator : "";
+    textEls[1].innerHTML = FlowerSite.safeRichText(work.description || "");
   }
 
   if (textEls[2]) {

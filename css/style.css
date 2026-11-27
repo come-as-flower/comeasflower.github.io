@@ -665,7 +665,8 @@ img.is-image-loaded {
   z-index: 1;
 }
 
-.workHeadingCreator {
+.workHeadingCreator,
+.work-selected .flowerNightText p:empty {
   display: none;
 }
 

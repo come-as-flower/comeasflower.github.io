@@ -465,8 +465,7 @@
         display: inline;
     }
 
-    .work-selected .workCreatorLine,
-    .work-selected .flowerNightText p:empty {
+    .work-selected .workCreatorLine {
         display: none;
     }
 
