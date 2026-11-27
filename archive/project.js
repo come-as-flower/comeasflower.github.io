@@ -67,7 +67,7 @@ function bindViewerControls() {
 
   document.addEventListener("click", (event) => {
     if (selectedWorkIndex === null) return;
-    if (event.target.closest(".focusViewerImg, .focusNav")) return;
+    if (event.target.closest(".focusViewerSlide, .focusNav, .focusPagination")) return;
     if (event.target.closest(".workThumbButton")) return;
     clearSelectedWork();
   });
@@ -442,6 +442,8 @@ function updateFocusViewer(images, index) {
   track.appendChild(slide);
   inner.appendChild(track);
 
+  if (images.length === 1) return;
+
   const previousButton = document.createElement("button");
   previousButton.className = "focusNav prev";
   previousButton.type = "button";
@@ -452,7 +454,18 @@ function updateFocusViewer(images, index) {
   nextButton.type = "button";
   nextButton.setAttribute("aria-label", "다음 이미지");
 
-  inner.append(previousButton, nextButton);
+  track.append(previousButton, nextButton);
+
+  const pagination = document.createElement("div");
+  pagination.className = "focusPagination";
+  pagination.setAttribute("role", "img");
+  pagination.setAttribute("aria-label", `전체 ${images.length}장 중 ${index + 1}번째 이미지`);
+  images.forEach((_, position) => {
+    const dot = document.createElement("span");
+    if (position === index) dot.className = "is-current";
+    pagination.appendChild(dot);
+  });
+  inner.appendChild(pagination);
   if (focusedControl) inner.querySelector(focusedControl)?.focus({ preventScroll: true });
 }
 
