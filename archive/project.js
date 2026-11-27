@@ -67,7 +67,7 @@ function bindViewerControls() {
 
   document.addEventListener("click", (event) => {
     if (selectedWorkIndex === null) return;
-    if (event.target.closest(".focusViewerImg, .focusNav")) return;
+    if (event.target.closest(".focusViewerSlide, .focusNav, .focusPagination")) return;
     if (event.target.closest(".workThumbButton")) return;
     clearSelectedWork();
   });
@@ -312,11 +312,11 @@ function updateRightPanel(work) {
   }
 
   if (textEls[0]) {
-    textEls[0].innerHTML = FlowerSite.safeRichText(work.description || "");
+    textEls[0].textContent = work.title && work.creator ? work.creator : "";
   }
 
   if (textEls[1]) {
-    textEls[1].textContent = work.creator ? work.creator : "";
+    textEls[1].innerHTML = FlowerSite.safeRichText(work.description || "");
   }
 
   if (textEls[2]) {
@@ -421,7 +421,7 @@ function updateFocusViewer(images, index) {
   track.className = "focusViewerTrack";
 
   const slide = document.createElement("div");
-  slide.className = "focusViewerSlide";
+  slide.className = "focusViewerSlide is-image-loading";
 
   const img = document.createElement("img");
   img.className = "focusViewerImg";
@@ -430,12 +430,19 @@ function updateFocusViewer(images, index) {
   img.loading = "eager";
   img.decoding = "async";
   img.src = buildImageUrl(images[index], "w1600");
-  inner.classList.add("is-image-loading");
-  FlowerSite.setImageLoadingState(img, inner);
+  FlowerSite.setImageLoadingState(img, slide);
 
-  slide.appendChild(img);
+  const loadingMessage = document.createElement("span");
+  loadingMessage.className = "focusLoadingMessage";
+  loadingMessage.textContent = "이미지를 불러오는 중…";
+  const errorMessage = document.createElement("span");
+  errorMessage.className = "focusErrorMessage";
+  errorMessage.textContent = "이미지를 불러오지 못했습니다.";
+  slide.append(img, loadingMessage, errorMessage);
   track.appendChild(slide);
   inner.appendChild(track);
+
+  if (images.length === 1) return;
 
   const previousButton = document.createElement("button");
   previousButton.className = "focusNav prev";
@@ -447,7 +454,18 @@ function updateFocusViewer(images, index) {
   nextButton.type = "button";
   nextButton.setAttribute("aria-label", "다음 이미지");
 
-  inner.append(previousButton, nextButton);
+  track.append(previousButton, nextButton);
+
+  const pagination = document.createElement("div");
+  pagination.className = "focusPagination";
+  pagination.setAttribute("role", "img");
+  pagination.setAttribute("aria-label", `전체 ${images.length}장 중 ${index + 1}번째 이미지`);
+  images.forEach((_, position) => {
+    const dot = document.createElement("span");
+    if (position === index) dot.className = "is-current";
+    pagination.appendChild(dot);
+  });
+  inner.appendChild(pagination);
   if (focusedControl) inner.querySelector(focusedControl)?.focus({ preventScroll: true });
 }
 

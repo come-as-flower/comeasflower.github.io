@@ -665,7 +665,8 @@ img.is-image-loaded {
   z-index: 1;
 }
 
-.workHeadingCreator {
+.workHeadingCreator,
+.work-selected .flowerNightText p:empty {
   display: none;
 }
 
@@ -686,6 +687,7 @@ body.work-selected .projectDetail .focusViewer:not([hidden]) {
 }
 
 .focusViewerTrack {
+  position: relative;
   display: flex;
   width: max-content;
   height: auto;
@@ -693,7 +695,34 @@ body.work-selected .projectDetail .focusViewer:not([hidden]) {
   will-change: auto;
 }
 
+.focusViewerInner:has(.focusPagination) {
+  --pagination-space: 24px;
+  overflow-y: auto;
+}
+
+.focusPagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  padding-top: 6px;
+  contain: inline-size;
+}
+
+.focusPagination span {
+  box-sizing: border-box;
+  width: 6px;
+  height: 6px;
+  border: 1px solid #000;
+  border-radius: 50%;
+}
+
+.focusPagination .is-current {
+  background: #000;
+}
+
 .focusViewerSlide {
+  cursor: default;
   flex: 0 0 auto;
   width: auto;
   height: auto;
@@ -702,11 +731,29 @@ body.work-selected .projectDetail .focusViewer:not([hidden]) {
   justify-content: center;
 }
 
+.focusViewerSlide:is(.is-image-loading, .is-image-error) {
+  width: calc(50vw - 4.8rem - 2px);
+  aspect-ratio: 4 / 3;
+  max-height: calc(100vh - 18.6rem - 2px - var(--pagination-space, 0px));
+}
+
+.focusViewerSlide:is(.is-image-loading, .is-image-error) img,
+.focusLoadingMessage,
+.focusErrorMessage {
+  display: none;
+}
+
+.is-image-loading > .focusLoadingMessage,
+.is-image-error > .focusErrorMessage {
+  display: block;
+  color: #555;
+}
+
 .focusViewerImg {
   width: auto;
   height: auto;
   max-width: calc(50vw - 4.8rem - 2px);
-  max-height: calc(100vh - 18.6rem - 2px);
+  max-height: calc(100vh - 18.6rem - 2px - var(--pagination-space, 0px));
   border: var(--border-syle);
   object-fit: contain;
   display: block;
@@ -719,8 +766,13 @@ body.work-selected .projectDetail {
   cursor: url("../assets/icon/close.svg") 20 20, pointer;
 }
 
-body.work-selected .projectDetail :not(.focusViewerImg):not(.focusNav):not(.desktopBack) {
+body.work-selected .projectDetail :not(.focusViewerSlide, .focusViewerSlide *):not(.focusNav):not(.desktopBack) {
   cursor: url("../assets/icon/close.svg") 20 20, pointer;
+}
+
+body.work-selected .projectDetail .focusPagination,
+body.work-selected .projectDetail .focusPagination span {
+  cursor: default;
 }
 
 body.work-selected .projectDetail .desktopBack,
