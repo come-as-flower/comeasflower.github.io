@@ -703,6 +703,24 @@ body.work-selected .projectDetail .focusViewer:not([hidden]) {
   justify-content: center;
 }
 
+.focusViewerSlide:is(.is-image-loading, .is-image-error) {
+  width: calc(50vw - 4.8rem - 2px);
+  aspect-ratio: 4 / 3;
+  max-height: calc(100vh - 18.6rem - 2px);
+}
+
+.focusViewerSlide:is(.is-image-loading, .is-image-error) img,
+.focusLoadingMessage,
+.focusErrorMessage {
+  display: none;
+}
+
+.is-image-loading > .focusLoadingMessage,
+.is-image-error > .focusErrorMessage {
+  display: block;
+  color: #555;
+}
+
 .focusViewerImg {
   width: auto;
   height: auto;

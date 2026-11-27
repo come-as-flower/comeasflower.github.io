@@ -421,7 +421,7 @@ function updateFocusViewer(images, index) {
   track.className = "focusViewerTrack";
 
   const slide = document.createElement("div");
-  slide.className = "focusViewerSlide";
+  slide.className = "focusViewerSlide is-image-loading";
 
   const img = document.createElement("img");
   img.className = "focusViewerImg";
@@ -430,10 +430,15 @@ function updateFocusViewer(images, index) {
   img.loading = "eager";
   img.decoding = "async";
   img.src = buildImageUrl(images[index], "w1600");
-  inner.classList.add("is-image-loading");
-  FlowerSite.setImageLoadingState(img, inner);
+  FlowerSite.setImageLoadingState(img, slide);
 
-  slide.appendChild(img);
+  const loadingMessage = document.createElement("span");
+  loadingMessage.className = "focusLoadingMessage";
+  loadingMessage.textContent = "이미지를 불러오는 중…";
+  const errorMessage = document.createElement("span");
+  errorMessage.className = "focusErrorMessage";
+  errorMessage.textContent = "이미지를 불러오지 못했습니다.";
+  slide.append(img, loadingMessage, errorMessage);
   track.appendChild(slide);
   inner.appendChild(track);
 
