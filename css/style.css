@@ -1162,6 +1162,20 @@ body.work-selected .projectDetail > .projectWorksList {
   object-fit: contain;
 }
 
+@media screen and (min-width: 1201px) {
+  .projectDetail > .projectWorksList {
+    container-type: size;
+    flex: 1 0 10rem;
+    height: auto;
+    min-height: 0;
+  }
+
+  .projectDetail .workImg {
+    box-sizing: border-box;
+    max-height: 100cqh;
+  }
+}
+
 .projectCreatorButton {
   padding: 0;
   font: inherit;
