@@ -37,7 +37,9 @@ const isSaveId=(id:string)=>id.length>0;
 export default function App(){
  const [session,setSession]=useState<Session|null>(null);
  const [checked,setChecked]=useState(false);
- const [isAdmin,setIsAdmin]=useState(false);
+ const [adminCheck,setAdminCheck]=useState<{userId:string;status:'allowed'|'denied'|'error'}|null>(null);
+ const adminStatus=adminCheck && adminCheck.userId===session?.user.id ? adminCheck.status : 'checking';
+ const isAdmin=adminStatus==='allowed';
  const [email,setEmail]=useState(''),[password,setPassword]=useState('');
  const [busy,setBusy]=useState(false),[notice,setNotice]=useState('');
  const [tab,setTab]=useState<Tab>('projects');
@@ -61,14 +63,21 @@ export default function App(){
  const [linkedProjectIds,setLinkedProjectIds]=useState<string[]>([]);
 
  useEffect(()=>{
-  const {data:{subscription}}=db.auth.onAuthStateChange((_event,s)=>{setSession(s);setChecked(true)});
-  void db.auth.getSession().then(({data})=>{setSession(data.session);setChecked(true)});
+  const {data:{subscription}}=db.auth.onAuthStateChange((_event,s)=>{
+   setSession(s);
+   setChecked(true);
+   if(!s)setAdminCheck(null);
+  });
   return ()=>subscription.unsubscribe();
  },[]);
- useEffect(()=>{if(!session){setIsAdmin(false);return;}
+ useEffect(()=>{if(!session)return;
   let active=true;
   void db.from('site_admins').select('user_id').eq('user_id',session.user.id).maybeSingle()
-   .then(({data,error})=>{if(active){setIsAdmin(!!data&&!error);if(error)setNotice(error.message)}});
+   .then(({data,error})=>{
+    if(!active)return;
+    const status=error ? 'error' : data ? 'allowed' : 'denied';
+    setAdminCheck({userId:session.user.id,status});
+   });
   return ()=>{active=false};
  },[session]);
 
@@ -297,7 +306,9 @@ export default function App(){
  <label>이메일<input type="email" required autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)}/></label>
  <label>비밀번호<input type="password" required autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)}/></label>
  <button disabled={busy} type="submit">로그인</button></form><p role="status">{notice}</p><a href={publicLink()}>사이트로 돌아가기</a></main>;
- if(!isAdmin)return <main className="center narrow"><h1>접근 권한 없음</h1><p>로그인한 계정이 관리자 목록에 없어요. Supabase의 site_admins에 사용자 UUID를 추가해야 해요.</p><button onClick={()=>void db.auth.signOut()}>로그아웃</button><p role="status">{notice}</p></main>;
+ if(adminStatus==='checking')return <main className="center"><p role="status">관리자 권한 확인 중…</p></main>;
+ if(adminStatus==='error')return <main className="center narrow"><h1>관리자 권한을 확인하지 못했어요.</h1><button onClick={()=>window.location.reload()}>다시 시도</button><button onClick={()=>void db.auth.signOut()}>로그아웃</button></main>;
+ if(adminStatus==='denied')return <main className="center narrow"><h1>접근 권한 없음</h1><p>로그인한 계정이 관리자 목록에 없어요. Supabase의 site_admins에 사용자 UUID를 추가해야 해요.</p><button onClick={()=>void db.auth.signOut()}>로그아웃</button></main>;
  const visibleWorks=works.filter(w=>w.project_id===selectedProject?.id).sort((a,b)=>a.sort_order-b.sort_order);
  const visibleImages=images.filter(i=>i.work_id===selectedWork?.id).sort((a,b)=>a.sort_order-b.sort_order);
  const visibleExhibitionImages=exhibitionImages.filter(i=>i.exhibition_id===selectedExhibition?.id).sort((a,b)=>a.sort_order-b.sort_order);
@@ -332,7 +343,7 @@ export default function App(){
       <label>활동 기간(표시용)<input value={selectedProject.duration_text} onChange={e=>setSelectedProject({...selectedProject,duration_text:e.target.value})} placeholder="2026.03.01. - 2026.04.30."/></label>
       <MemberPicker title="프로젝트 참여자" hint="이 작업에 함께한 멤버를 선택하세요. 아래 작업물의 제작자는 여기에서 선택한 멤버 안에서 고릅니다." members={members} selectedIds={selectedProjectMemberIds} onChange={setSelectedProjectMemberIds}/>
       <label className="check"><input type="checkbox" checked={selectedProject.published} onChange={e=>setSelectedProject({...selectedProject,published:e.target.checked})}/> 사이트에 공개</label>
-      <div className="save-row"><button disabled={busy} onClick={saveProject}>작업 저장</button><span>{selectedProject.id?'저장한 뒤 작업물과 이미지를 이어서 관리할 수 있어요.':'먼저 기본 정보를 저장하면 작업물을 추가할 수 있어요.'}</span></div>
+      <div className="save-row"><button disabled={busy} onClick={saveProject}>프로젝트 저장</button><span>{selectedProject.id?'저장한 뒤 작업물과 이미지를 이어서 관리할 수 있어요.':'먼저 기본 정보를 저장하면 작업물을 추가할 수 있어요.'}</span></div>
       {selectedProject.id&&<><div className="section-head work-title"><h3>작업물 <span className="count">{visibleWorks.length}</span></h3><button className="outline" onClick={()=>{if(!confirmDiscard())return;setDirty(false);setSelectedWork({...blankWork(selectedProject.id),sort_order:visibleWorks.length});setSelectedWorkMemberIds([])}}>+ 작업물 추가</button></div>
         <div className="chips">{visibleWorks.map((w,i)=><button key={w.id} className={selectedWork?.id===w.id?'selected':''} onClick={()=>selectWork(w)}>{i+1}. {w.title||workMemberNames(w.id).join(', ')||'제목 없음'}</button>)}</div>
         {selectedWork&&<section className="subpanel"><div className="section-head"><h3>작품 편집</h3>{selectedWork.id&&<button className="danger outline" onClick={()=>removeWithConfirmation('works',selectedWork.id,'작품',()=>setSelectedWork(null))}>작품 삭제</button>}</div>
@@ -342,9 +353,27 @@ export default function App(){
           <div className="form-grid"><label>작업물 순서<input type="number" value={selectedWork.sort_order} onChange={e=>setSelectedWork({...selectedWork,sort_order:Number(e.target.value)})}/></label><label className="check"><input type="checkbox" checked={selectedWork.published} onChange={e=>setSelectedWork({...selectedWork,published:e.target.checked})}/> 작업물 공개</label></div>
           <button disabled={busy} onClick={saveWork}>작업물 저장</button>
           {selectedWork.id&&<><h3>이미지 <span className="count">{visibleImages.length}장</span></h3><div className="image-grid">{visibleImages.map((im,i)=><div className="image-card" key={im.id}><img src={imageUrl(im.provider,im.path)} alt={im.alt_text||`${i+1}번 이미지`}/><div className="image-actions"><button className="outline" disabled={busy||i===0} onClick={()=>changeImageOrder(im,-1)} aria-label="앞으로 이동">←</button><span>{i+1}</span><button className="outline" disabled={busy||i===visibleImages.length-1} onClick={()=>changeImageOrder(im,1)} aria-label="뒤로 이동">→</button><button className="danger outline" disabled={busy} onClick={()=>imageRemove(im)}>삭제</button></div></div>)}</div>
-            <label className="upload-zone">+ 파일 선택 (여러 장 가능, JPG/PNG/WebP → WebP 자동 변환)<input disabled={busy} type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e=>{void onFiles(e.target.files);e.target.value=''}}/></label>
-            <div className="form-grid"><label>Google Drive 링크/ID<input value={driveLink} placeholder="https://drive.google.com/file/d/..." onChange={e=>setDriveLink(e.target.value)}/></label><button className="outline align-end" disabled={busy} onClick={()=>void act(async()=>{const id=parseDrive(driveLink);if(!id)throw Error('Google Drive 파일 링크/ID를 확인해 주세요.');await linkImage('google_drive',id);setDriveLink('')})}>드라이브 이미지 추가</button></div>
-            <div className="form-grid"><label>외부 HTTPS 이미지 URL (R2 등)<input value={externalUrl} placeholder="https://cdn.example.com/image.webp" onChange={e=>setExternalUrl(e.target.value)}/></label><button className="outline align-end" disabled={busy} onClick={()=>void act(async()=>{if(!/^https:\/\//.test(externalUrl))throw Error('HTTPS 이미지 주소만 지원해요.');await linkImage('r2',externalUrl.trim());setExternalUrl('')})}>외부 이미지 추가</button></div>
+            <label className="upload-zone">
+              <span id="work-file-label">파일 업로드 (추천) · JPG, PNG, WebP 여러 장 선택</span>
+              <small id="work-file-help" className="image-method-hint">파일을 고르면 WebP로 자동 압축해 사이트 저장소에 보관해요. 별도 공유 설정은 필요 없어요.</small>
+              <input aria-labelledby="work-file-label" aria-describedby="work-file-help" disabled={busy} type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e=>{void onFiles(e.target.files);e.target.value=''}}/>
+            </label>
+            <div className="form-grid">
+              <label>
+                <span id="work-drive-label">Google Drive 링크 또는 파일 ID</span>
+                <small id="work-drive-help" className="image-method-hint">드라이브에 있는 파일을 그대로 사용해요. 공유 설정을 ‘링크가 있는 모든 사용자’로 유지해 주세요.</small>
+                <input aria-labelledby="work-drive-label" aria-describedby="work-drive-help" value={driveLink} placeholder="https://drive.google.com/file/d/..." onChange={e=>setDriveLink(e.target.value)}/>
+              </label>
+              <button className="outline align-end" disabled={busy} onClick={()=>void act(async()=>{const id=parseDrive(driveLink);if(!id)throw Error('Google Drive 파일 링크/ID를 확인해 주세요.');await linkImage('google_drive',id);setDriveLink('')})}>드라이브 이미지 추가</button>
+            </div>
+            <div className="form-grid">
+              <label>
+                <span id="work-url-label">외부 이미지 주소 (HTTPS)</span>
+                <small id="work-url-help" className="image-method-hint">이미지가 바로 열리는 공개 주소를 연결해요. 이미지가 삭제되거나 주소가 바뀌면 표시되지 않아요.</small>
+                <input aria-labelledby="work-url-label" aria-describedby="work-url-help" value={externalUrl} placeholder="https://cdn.example.com/image.webp" onChange={e=>setExternalUrl(e.target.value)}/>
+              </label>
+              <button className="outline align-end" disabled={busy} onClick={()=>void act(async()=>{if(!/^https:\/\//.test(externalUrl))throw Error('HTTPS 이미지 주소만 지원해요.');await linkImage('r2',externalUrl.trim());setExternalUrl('')})}>외부 이미지 추가</button>
+            </div>
             </>}</section>}
       </>}
     </>:<p className="empty">왼쪽에서 프로젝트를 선택하거나 새로 추가해 주세요.</p>}</section>
