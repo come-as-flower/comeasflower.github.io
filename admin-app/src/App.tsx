@@ -353,9 +353,27 @@ export default function App(){
           <div className="form-grid"><label>작업물 순서<input type="number" value={selectedWork.sort_order} onChange={e=>setSelectedWork({...selectedWork,sort_order:Number(e.target.value)})}/></label><label className="check"><input type="checkbox" checked={selectedWork.published} onChange={e=>setSelectedWork({...selectedWork,published:e.target.checked})}/> 작업물 공개</label></div>
           <button disabled={busy} onClick={saveWork}>작업물 저장</button>
           {selectedWork.id&&<><h3>이미지 <span className="count">{visibleImages.length}장</span></h3><div className="image-grid">{visibleImages.map((im,i)=><div className="image-card" key={im.id}><img src={imageUrl(im.provider,im.path)} alt={im.alt_text||`${i+1}번 이미지`}/><div className="image-actions"><button className="outline" disabled={busy||i===0} onClick={()=>changeImageOrder(im,-1)} aria-label="앞으로 이동">←</button><span>{i+1}</span><button className="outline" disabled={busy||i===visibleImages.length-1} onClick={()=>changeImageOrder(im,1)} aria-label="뒤로 이동">→</button><button className="danger outline" disabled={busy} onClick={()=>imageRemove(im)}>삭제</button></div></div>)}</div>
-            <label className="upload-zone">+ 파일 선택 (여러 장 가능, JPG/PNG/WebP → WebP 자동 변환)<input disabled={busy} type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e=>{void onFiles(e.target.files);e.target.value=''}}/></label>
-            <div className="form-grid"><label>Google Drive 링크/ID<input value={driveLink} placeholder="https://drive.google.com/file/d/..." onChange={e=>setDriveLink(e.target.value)}/></label><button className="outline align-end" disabled={busy} onClick={()=>void act(async()=>{const id=parseDrive(driveLink);if(!id)throw Error('Google Drive 파일 링크/ID를 확인해 주세요.');await linkImage('google_drive',id);setDriveLink('')})}>드라이브 이미지 추가</button></div>
-            <div className="form-grid"><label>외부 HTTPS 이미지 URL (R2 등)<input value={externalUrl} placeholder="https://cdn.example.com/image.webp" onChange={e=>setExternalUrl(e.target.value)}/></label><button className="outline align-end" disabled={busy} onClick={()=>void act(async()=>{if(!/^https:\/\//.test(externalUrl))throw Error('HTTPS 이미지 주소만 지원해요.');await linkImage('r2',externalUrl.trim());setExternalUrl('')})}>외부 이미지 추가</button></div>
+            <label className="upload-zone">
+              <span id="work-file-label">파일 업로드 (추천) · JPG, PNG, WebP 여러 장 선택</span>
+              <small id="work-file-help" className="image-method-hint">파일을 고르면 WebP로 자동 압축해 사이트 저장소에 보관해요. 별도 공유 설정은 필요 없어요.</small>
+              <input aria-labelledby="work-file-label" aria-describedby="work-file-help" disabled={busy} type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e=>{void onFiles(e.target.files);e.target.value=''}}/>
+            </label>
+            <div className="form-grid">
+              <label>
+                <span id="work-drive-label">Google Drive 링크 또는 파일 ID</span>
+                <small id="work-drive-help" className="image-method-hint">드라이브에 있는 파일을 그대로 사용해요. 공유 설정을 ‘링크가 있는 모든 사용자’로 유지해 주세요.</small>
+                <input aria-labelledby="work-drive-label" aria-describedby="work-drive-help" value={driveLink} placeholder="https://drive.google.com/file/d/..." onChange={e=>setDriveLink(e.target.value)}/>
+              </label>
+              <button className="outline align-end" disabled={busy} onClick={()=>void act(async()=>{const id=parseDrive(driveLink);if(!id)throw Error('Google Drive 파일 링크/ID를 확인해 주세요.');await linkImage('google_drive',id);setDriveLink('')})}>드라이브 이미지 추가</button>
+            </div>
+            <div className="form-grid">
+              <label>
+                <span id="work-url-label">외부 이미지 주소 (HTTPS)</span>
+                <small id="work-url-help" className="image-method-hint">이미지가 바로 열리는 공개 주소를 연결해요. 이미지가 삭제되거나 주소가 바뀌면 표시되지 않아요.</small>
+                <input aria-labelledby="work-url-label" aria-describedby="work-url-help" value={externalUrl} placeholder="https://cdn.example.com/image.webp" onChange={e=>setExternalUrl(e.target.value)}/>
+              </label>
+              <button className="outline align-end" disabled={busy} onClick={()=>void act(async()=>{if(!/^https:\/\//.test(externalUrl))throw Error('HTTPS 이미지 주소만 지원해요.');await linkImage('r2',externalUrl.trim());setExternalUrl('')})}>외부 이미지 추가</button>
+            </div>
             </>}</section>}
       </>}
     </>:<p className="empty">왼쪽에서 프로젝트를 선택하거나 새로 추가해 주세요.</p>}</section>
