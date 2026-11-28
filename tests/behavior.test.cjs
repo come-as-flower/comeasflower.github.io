@@ -133,6 +133,22 @@ test("image timeout permits a slow gallery to continue and does not start twice"
   assert.equal(env.intervalCount(), 1);
 });
 
+test("work viewer cycles while hovered or focused and pauses for reduced motion", () => {
+  const env = browser();
+  const viewer = env.makeElement();
+  const image = Object.assign(new EventTarget(), { complete: false });
+  viewer.hover = true;
+  env.document.activeElement = viewer;
+  env.utils.createAutoCycle(viewer, () => {}, [image], 4000, undefined, { pauseOnHoverOrFocus: false });
+  assert.equal(env.intervalCount(), 0);
+  image.dispatchEvent(new Event("load"));
+  env.flushFrames();
+  assert.equal(env.intervalCount(), 1);
+  env.motion.matches = true;
+  env.motion.dispatchEvent(new Event("change"));
+  assert.equal(env.intervalCount(), 0);
+});
+
 test("autoplay pauses for reduced motion, focus, pointer input and hidden pages", async () => {
   const env = browser();
   const element = env.makeElement();

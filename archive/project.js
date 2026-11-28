@@ -432,13 +432,10 @@ function updateFocusViewer(images, index) {
   img.src = buildImageUrl(images[index], "w1600");
   FlowerSite.setImageLoadingState(img, slide);
 
-  const loadingMessage = document.createElement("span");
-  loadingMessage.className = "focusLoadingMessage";
-  loadingMessage.textContent = "이미지를 불러오는 중…";
   const errorMessage = document.createElement("span");
   errorMessage.className = "focusErrorMessage";
   errorMessage.textContent = "이미지를 불러오지 못했습니다.";
-  slide.append(img, loadingMessage, errorMessage);
+  slide.append(img, errorMessage);
   track.appendChild(slide);
   inner.appendChild(track);
 
@@ -465,7 +462,7 @@ function updateFocusViewer(images, index) {
     if (position === index) dot.className = "is-current";
     pagination.appendChild(dot);
   });
-  inner.appendChild(pagination);
+  track.appendChild(pagination);
   if (focusedControl) inner.querySelector(focusedControl)?.focus({ preventScroll: true });
 }
 
@@ -473,10 +470,8 @@ function startAutoSlide(images) {
   stopAutoSlide();
   if (!images || images.length <= 1) return;
   const viewer = document.getElementById("focusViewer");
-  slideTimer = FlowerSite.createAutoCycle(viewer, () => {
-    selectedImageIndex = (selectedImageIndex + 1) % images.length;
-    updateFocusViewer(images, selectedImageIndex);
-  }, [...viewer.querySelectorAll("img")]);
+  slideTimer = FlowerSite.createAutoCycle(viewer, showNextImage,
+    [...viewer.querySelectorAll("img")], 4000, undefined, { pauseOnHoverOrFocus: false });
 }
 
 function stopAutoSlide() {

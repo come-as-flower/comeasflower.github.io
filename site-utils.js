@@ -85,7 +85,7 @@ window.FlowerSite = (() => {
     }
   }
 
-  function createAutoCycle(element, tick, images = [], delay = 4000, onReady = () => {}) {
+  function createAutoCycle(element, tick, images = [], delay = 4000, onReady = () => {}, { pauseOnHoverOrFocus = true } = {}) {
     if (!element) return { destroy() {} };
     let timer;
     let quietTimer;
@@ -102,8 +102,8 @@ window.FlowerSite = (() => {
     const update = () => {
       clearInterval(timer);
       timer = null;
-      if (destroyed || !ready || suspended || document.hidden || motion.matches || interacting ||
-          pointerDown || element.matches(":hover") || element.contains(document.activeElement)) return;
+      if (destroyed || !ready || suspended || document.hidden || motion.matches || interacting || pointerDown) return;
+      if (pauseOnHoverOrFocus && (element.matches(":hover") || element.contains(document.activeElement))) return;
       timer = setInterval(tick, delay);
     };
     const hold = () => {

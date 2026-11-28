@@ -695,18 +695,21 @@ body.work-selected .projectDetail .focusViewer:not([hidden]) {
   will-change: auto;
 }
 
-.focusViewerInner:has(.focusPagination) {
-  --pagination-space: 24px;
-  overflow-y: auto;
-}
-
 .focusPagination {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  pointer-events: none;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 4px;
-  padding-top: 6px;
-  contain: inline-size;
+  width: max-content;
+  max-width: calc(100% - 8px);
+  box-sizing: border-box;
+  padding: 4px 6px;
 }
 
 .focusPagination span {
@@ -715,6 +718,11 @@ body.work-selected .projectDetail .focusViewer:not([hidden]) {
   height: 6px;
   border: 1px solid #000;
   border-radius: 50%;
+  outline: 1px solid rgb(255 255 255 / 85%);
+}
+
+.focusPagination span:not(.is-current) {
+  box-shadow: inset 0 0 0 1px #fff;
 }
 
 .focusPagination .is-current {
@@ -734,16 +742,14 @@ body.work-selected .projectDetail .focusViewer:not([hidden]) {
 .focusViewerSlide:is(.is-image-loading, .is-image-error) {
   width: calc(50vw - 4.8rem - 2px);
   aspect-ratio: 4 / 3;
-  max-height: calc(100vh - 18.6rem - 2px - var(--pagination-space, 0px));
+  max-height: calc(100vh - 18.6rem - 2px);
 }
 
 .focusViewerSlide:is(.is-image-loading, .is-image-error) img,
-.focusLoadingMessage,
 .focusErrorMessage {
   display: none;
 }
 
-.is-image-loading > .focusLoadingMessage,
 .is-image-error > .focusErrorMessage {
   display: block;
   color: #555;
@@ -753,7 +759,7 @@ body.work-selected .projectDetail .focusViewer:not([hidden]) {
   width: auto;
   height: auto;
   max-width: calc(50vw - 4.8rem - 2px);
-  max-height: calc(100vh - 18.6rem - 2px - var(--pagination-space, 0px));
+  max-height: calc(100vh - 18.6rem - 2px);
   border: var(--border-syle);
   object-fit: contain;
   display: block;
@@ -768,11 +774,6 @@ body.work-selected .projectDetail {
 
 body.work-selected .projectDetail :not(.focusViewerSlide, .focusViewerSlide *):not(.focusNav):not(.desktopBack) {
   cursor: url("../assets/icon/close.svg") 20 20, pointer;
-}
-
-body.work-selected .projectDetail .focusPagination,
-body.work-selected .projectDetail .focusPagination span {
-  cursor: default;
 }
 
 body.work-selected .projectDetail .desktopBack,
