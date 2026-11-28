@@ -37,7 +37,9 @@ const isSaveId=(id:string)=>id.length>0;
 export default function App(){
  const [session,setSession]=useState<Session|null>(null);
  const [checked,setChecked]=useState(false);
- const [isAdmin,setIsAdmin]=useState(false);
+ const [adminCheck,setAdminCheck]=useState<{userId:string;status:'allowed'|'denied'|'error'}|null>(null);
+ const adminStatus=adminCheck && adminCheck.userId===session?.user.id ? adminCheck.status : 'checking';
+ const isAdmin=adminStatus==='allowed';
  const [email,setEmail]=useState(''),[password,setPassword]=useState('');
  const [busy,setBusy]=useState(false),[notice,setNotice]=useState('');
  const [tab,setTab]=useState<Tab>('projects');
@@ -61,14 +63,21 @@ export default function App(){
  const [linkedProjectIds,setLinkedProjectIds]=useState<string[]>([]);
 
  useEffect(()=>{
-  const {data:{subscription}}=db.auth.onAuthStateChange((_event,s)=>{setSession(s);setChecked(true)});
-  void db.auth.getSession().then(({data})=>{setSession(data.session);setChecked(true)});
+  const {data:{subscription}}=db.auth.onAuthStateChange((_event,s)=>{
+   setSession(s);
+   setChecked(true);
+   if(!s)setAdminCheck(null);
+  });
   return ()=>subscription.unsubscribe();
  },[]);
- useEffect(()=>{if(!session){setIsAdmin(false);return;}
+ useEffect(()=>{if(!session)return;
   let active=true;
   void db.from('site_admins').select('user_id').eq('user_id',session.user.id).maybeSingle()
-   .then(({data,error})=>{if(active){setIsAdmin(!!data&&!error);if(error)setNotice(error.message)}});
+   .then(({data,error})=>{
+    if(!active)return;
+    const status=error ? 'error' : data ? 'allowed' : 'denied';
+    setAdminCheck({userId:session.user.id,status});
+   });
   return ()=>{active=false};
  },[session]);
 
@@ -297,7 +306,9 @@ export default function App(){
  <label>이메일<input type="email" required autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)}/></label>
  <label>비밀번호<input type="password" required autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)}/></label>
  <button disabled={busy} type="submit">로그인</button></form><p role="status">{notice}</p><a href={publicLink()}>사이트로 돌아가기</a></main>;
- if(!isAdmin)return <main className="center narrow"><h1>접근 권한 없음</h1><p>로그인한 계정이 관리자 목록에 없어요. Supabase의 site_admins에 사용자 UUID를 추가해야 해요.</p><button onClick={()=>void db.auth.signOut()}>로그아웃</button><p role="status">{notice}</p></main>;
+ if(adminStatus==='checking')return <main className="center"><p role="status">관리자 권한 확인 중…</p></main>;
+ if(adminStatus==='error')return <main className="center narrow"><h1>관리자 권한을 확인하지 못했어요.</h1><button onClick={()=>window.location.reload()}>다시 시도</button><button onClick={()=>void db.auth.signOut()}>로그아웃</button></main>;
+ if(adminStatus==='denied')return <main className="center narrow"><h1>접근 권한 없음</h1><p>로그인한 계정이 관리자 목록에 없어요. Supabase의 site_admins에 사용자 UUID를 추가해야 해요.</p><button onClick={()=>void db.auth.signOut()}>로그아웃</button></main>;
  const visibleWorks=works.filter(w=>w.project_id===selectedProject?.id).sort((a,b)=>a.sort_order-b.sort_order);
  const visibleImages=images.filter(i=>i.work_id===selectedWork?.id).sort((a,b)=>a.sort_order-b.sort_order);
  const visibleExhibitionImages=exhibitionImages.filter(i=>i.exhibition_id===selectedExhibition?.id).sort((a,b)=>a.sort_order-b.sort_order);
