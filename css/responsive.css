@@ -498,6 +498,10 @@
         align-items: flex-end;
     }
 
+    .projectDetail .workThumbButton {
+        width: 100%;
+    }
+
     .projectDetail .workImg {
         max-width: 100%;
         max-height: none;

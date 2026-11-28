@@ -729,7 +729,14 @@ body.work-selected .projectDetail .focusViewer:not([hidden]) {
   background: #000;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .focusPagination span {
+    transition: background-color 220ms ease, box-shadow 220ms ease;
+  }
+}
+
 .focusViewerSlide {
+  position: relative;
   cursor: default;
   flex: 0 0 auto;
   width: auto;
@@ -766,6 +773,16 @@ body.work-selected .projectDetail .focusViewer:not([hidden]) {
   flex-shrink: 0;
   box-sizing: border-box;
   cursor: default;
+}
+
+.focusViewerSlide > img.focusViewerImg.is-leaving {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  max-width: 100%;
+  max-height: 100%;
+  pointer-events: none;
+  background-color: var(--bg-color);
 }
 
 body.work-selected .projectDetail {
@@ -1148,9 +1165,13 @@ body.work-selected .projectDetail > .projectWorksList {
   display: none;
 }
 
-.projectDetail .work,
+.projectDetail > .projectWorksList > .work {
+  display: block;
+  flex: none;
+}
+
 .projectDetail .workThumbButton {
-  align-items: flex-end;
+  width: auto;
 }
 
 .projectDetail .workImg {
@@ -1160,6 +1181,27 @@ body.work-selected .projectDetail > .projectWorksList {
   max-width: calc(25vw - 3.8rem);
   max-height: 100%;
   object-fit: contain;
+}
+
+@media screen and (min-width: 1201px) {
+  .projectDetail > .projectWorksList {
+    container-type: size;
+    flex: 1 0 10rem;
+    height: auto;
+    min-height: 0;
+  }
+
+  .projectDetail .workImg {
+    box-sizing: border-box;
+    max-height: 100cqh;
+  }
+
+  .projectDetail .workThumbButton:is(.is-image-loading, .is-image-error) {
+    width: calc(25vw - 3.8rem);
+    max-width: 133cqh;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+  }
 }
 
 .projectCreatorButton {
