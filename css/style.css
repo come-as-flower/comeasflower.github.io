@@ -729,7 +729,14 @@ body.work-selected .projectDetail .focusViewer:not([hidden]) {
   background: #000;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .focusPagination span {
+    transition: background-color 220ms ease, box-shadow 220ms ease;
+  }
+}
+
 .focusViewerSlide {
+  position: relative;
   cursor: default;
   flex: 0 0 auto;
   width: auto;
@@ -766,6 +773,16 @@ body.work-selected .projectDetail .focusViewer:not([hidden]) {
   flex-shrink: 0;
   box-sizing: border-box;
   cursor: default;
+}
+
+.focusViewerSlide > img.focusViewerImg.is-leaving {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  max-width: 100%;
+  max-height: 100%;
+  pointer-events: none;
+  background-color: var(--bg-color);
 }
 
 body.work-selected .projectDetail {

@@ -1,6 +1,7 @@
 let currentProject = null;
 let selectedWorkIndex = null;
 let selectedImageIndex = 0;
+let pendingFocusImage = null;
 let slideTimer = null;
 let worksCycleTimer = null;
 let baseProjectInfo = null;
@@ -237,8 +238,7 @@ function selectWork(index, focusViewer = false) {
   document.body.classList.add("work-selected");
   updateSelectedThumbnail(index);
   updateRightPanel(work);
-  updateFocusViewer(images, selectedImageIndex);
-  startAutoSlide(images);
+  renderFocusViewer(images);
   if (window.matchMedia("(max-width: 1200px)").matches) {
     window.scrollTo({ top: 0, behavior: "instant" });
   }
@@ -256,7 +256,7 @@ function clearSelectedWork() {
 
   const viewer = document.getElementById("focusViewer");
   const inner = viewer?.querySelector(".focusViewerInner");
-  const viewerImg = document.getElementById("focusViewerImg");
+  pendingFocusImage = null;
 
   if (viewer) {
     viewer.hidden = true;
@@ -264,11 +264,6 @@ function clearSelectedWork() {
 
   if (inner) {
     inner.innerHTML = "";
-  }
-
-  if (viewerImg) {
-    viewerImg.src = "";
-    viewerImg.alt = "";
   }
 
   const worksList = document.querySelector(".projectWorksList");
@@ -400,7 +395,8 @@ function normalizeImages(work) {
   return [];
 }
 
-function updateFocusViewer(images, index) {
+function renderFocusViewer(images) {
+  stopAutoSlide();
   const viewer = document.getElementById("focusViewer");
   const inner = viewer?.querySelector(".focusViewerInner");
 
@@ -412,8 +408,6 @@ function updateFocusViewer(images, index) {
     return;
   }
 
-  const focusedControl = document.activeElement?.classList.contains("focusNav")
-    ? (document.activeElement.classList.contains("prev") ? ".prev" : ".next") : null;
   viewer.hidden = false;
   inner.innerHTML = "";
 
@@ -423,21 +417,13 @@ function updateFocusViewer(images, index) {
   const slide = document.createElement("div");
   slide.className = "focusViewerSlide is-image-loading";
 
-  const img = document.createElement("img");
-  img.className = "focusViewerImg";
-  img.id = "focusViewerImg";
-  img.alt = currentProject?.works?.[selectedWorkIndex]?.title || "선택한 작품 이미지";
-  img.loading = "eager";
-  img.decoding = "async";
-  img.src = buildImageUrl(images[index], "w1600");
-  FlowerSite.setImageLoadingState(img, slide);
-
   const errorMessage = document.createElement("span");
   errorMessage.className = "focusErrorMessage";
   errorMessage.textContent = "이미지를 불러오지 못했습니다.";
-  slide.append(img, errorMessage);
+  slide.appendChild(errorMessage);
   track.appendChild(slide);
   inner.appendChild(track);
+  showFocusImage(slide, images, 0);
 
   if (images.length === 1) return;
 
@@ -456,22 +442,57 @@ function updateFocusViewer(images, index) {
   const pagination = document.createElement("div");
   pagination.className = "focusPagination";
   pagination.setAttribute("role", "img");
-  pagination.setAttribute("aria-label", `전체 ${images.length}장 중 ${index + 1}번째 이미지`);
+  pagination.setAttribute("aria-label", `전체 ${images.length}장 중 1번째 이미지`);
   images.forEach((_, position) => {
     const dot = document.createElement("span");
-    if (position === index) dot.className = "is-current";
+    if (position === 0) dot.className = "is-current";
     pagination.appendChild(dot);
   });
   track.appendChild(pagination);
-  if (focusedControl) inner.querySelector(focusedControl)?.focus({ preventScroll: true });
 }
 
-function startAutoSlide(images) {
+async function showFocusImage(slide, images, index) {
   stopAutoSlide();
-  if (!images || images.length <= 1) return;
-  const viewer = document.getElementById("focusViewer");
-  slideTimer = FlowerSite.createAutoCycle(viewer, showNextImage,
-    [...viewer.querySelectorAll("img")], 4000, undefined, { pauseOnHoverOrFocus: false });
+  const img = new Image();
+  pendingFocusImage = img;
+  img.className = "focusViewerImg";
+  img.alt = currentProject?.works?.[selectedWorkIndex]?.title || "선택한 작품 이미지";
+  img.src = buildImageUrl(images[index], "w1600");
+
+  let failed = false;
+  try {
+    await img.decode();
+  } catch {
+    failed = true;
+  }
+  if (pendingFocusImage !== img || !slide.isConnected) return;
+  pendingFocusImage = null;
+
+  slide.querySelector(".is-leaving")?.remove();
+  const previous = slide.querySelector("img");
+  slide.classList.remove("is-image-loading");
+  slide.classList.toggle("is-image-error", failed);
+  if (!failed) slide.prepend(img);
+  if (previous) {
+    if (failed || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      previous.remove();
+    } else {
+      previous.classList.add("is-leaving");
+      previous.alt = "";
+      const fade = previous.animate([{ opacity: 1 }, { opacity: 0 }], {
+        duration: 320, easing: "ease-in-out", fill: "forwards",
+      });
+      fade.onfinish = () => previous.remove();
+    }
+  }
+
+  const pagination = slide.parentElement.querySelector(".focusPagination");
+  if (pagination) {
+    pagination.setAttribute("aria-label", `전체 ${images.length}장 중 ${index + 1}번째 이미지`);
+    [...pagination.children].forEach((dot, position) => dot.classList.toggle("is-current", position === index));
+    slideTimer = FlowerSite.createAutoCycle(document.getElementById("focusViewer"), showNextImage,
+      [], 4000, undefined, { pauseOnHoverOrFocus: false });
+  }
 }
 
 function stopAutoSlide() {
@@ -480,27 +501,23 @@ function stopAutoSlide() {
 }
 
 function showPrevImage() {
-  const work = currentProject?.works?.[selectedWorkIndex];
-  if (!work) return;
-
-  const images = normalizeImages(work);
-  if (images.length <= 1) return;
-
-  selectedImageIndex = (selectedImageIndex - 1 + images.length) % images.length;
-  updateFocusViewer(images, selectedImageIndex);
-  startAutoSlide(images);
+  changeFocusImage(-1);
 }
 
 function showNextImage() {
+  changeFocusImage(1);
+}
+
+function changeFocusImage(step) {
   const work = currentProject?.works?.[selectedWorkIndex];
-  if (!work) return;
+  const slide = document.querySelector(".focusViewerSlide");
+  if (!work || !slide) return;
 
   const images = normalizeImages(work);
   if (images.length <= 1) return;
 
-  selectedImageIndex = (selectedImageIndex + 1) % images.length;
-  updateFocusViewer(images, selectedImageIndex);
-  startAutoSlide(images);
+  selectedImageIndex = (selectedImageIndex + step + images.length) % images.length;
+  showFocusImage(slide, images, selectedImageIndex);
 }
 
 function buildImageUrl(value, size = "w1600") {
