@@ -452,6 +452,11 @@
         max-height: none;
     }
 
+    .focusViewerTrack:has(.focusPagination) .focusViewerImg {
+        width: auto;
+        max-height: calc(100svh - 12rem);
+    }
+
     .work-selected .flowerNightExplanation {
         gap: 1.2rem;
     }

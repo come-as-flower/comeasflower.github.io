@@ -462,7 +462,7 @@ function updateFocusViewer(images, index) {
     if (position === index) dot.className = "is-current";
     pagination.appendChild(dot);
   });
-  inner.appendChild(pagination);
+  track.appendChild(pagination);
   if (focusedControl) inner.querySelector(focusedControl)?.focus({ preventScroll: true });
 }
 
