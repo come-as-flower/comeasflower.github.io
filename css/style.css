@@ -1148,9 +1148,13 @@ body.work-selected .projectDetail > .projectWorksList {
   display: none;
 }
 
-.projectDetail .work,
+.projectDetail > .projectWorksList > .work {
+  display: block;
+  flex: none;
+}
+
 .projectDetail .workThumbButton {
-  align-items: flex-end;
+  width: auto;
 }
 
 .projectDetail .workImg {
@@ -1173,6 +1177,13 @@ body.work-selected .projectDetail > .projectWorksList {
   .projectDetail .workImg {
     box-sizing: border-box;
     max-height: 100cqh;
+  }
+
+  .projectDetail .workThumbButton:is(.is-image-loading, .is-image-error) {
+    width: calc(25vw - 3.8rem);
+    max-width: 133cqh;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
   }
 }
 
